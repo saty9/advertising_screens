@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="1200"/>
+    <meta charset="UTF-8">
+    <title>Screens</title>
+    <script src="{% static 'admin/js/vendor/jquery/jquery.min.js' %} " type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'admin/js/jquery.init.js' %} " type="text/javascript" charset="utf-8"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            background-color: black;
+
+        }
+
+        video {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            transition: all 1.2s linear;
+            z-index: -10;
+            object-fit: fill;
+            opacity: 0;
+        }
+
+        img {
+            opacity: 0;
+            transition: all 2s;
+            width: 100vw;
+            height: 100vh;
+            object-fit: fill;
+            position: absolute;
+            z-index: -10;
+        }
+
+        iframe {
+            opacity: 0;
+            transition: all 2s;
+            width: 100vw;
+            height: 100vh;
+            object-fit: fill;
+            position: absolute;
+            z-index: -10;
+            border: 0
+        }
+    </style>
+</head>
+
+<body>
+{% for source in playlist %}
+    {% if source.type == "IMG" %}
+        <img src="{{ source.file.url }}" class="advert image">
+    {% elif source.type == "VID" %}
+        <video muted class="advert video">
+            <source src="{{ source.file.url }}" type="video/mp4">
+        </video>
+    {% elif source.type == "FRM" %}
+        <iframe src="{{ source.url }}" class="advert image"></iframe>
+    {% endif %}
+{% endfor %}
+<script>
+    //Marketing Screen Slideshow
+    // Original JS CSS and HTML Made by Thew & Charlie 2018
+    var displaytime = 5000;
+    var x = document.getElementsByClassName("advert");
+    var i = 0;
+
+    window.onload = function screentest() {
+        i = i % x.length;
+        if (django.jQuery(x[i]).hasClass('video') === true) {
+            x[i].style.opacity = 1;
+            x[i].play();
+            x[i].onended = function () {
+                x[i].style.opacity = 0;
+                i = i + 1;
+                screentest();
+            };
+        } else if (django.jQuery(x[i]).hasClass('image') === true) {
+            x[i].style.opacity = 1;
+            window.setTimeout(screentest, displaytime + 1);
+            window.setTimeout(fadeout, displaytime);
+
+            function fadeout() {
+                x[i].style.opacity = 0;
+                i = i + 1;
+            }
+        }
+    }
+</script>
+</body>
+</html>

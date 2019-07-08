@@ -1,7 +1,7 @@
 from django_cron import CronJobBase, Schedule
 from django.utils import timezone
 
-from screens.models import ScheduleBuilderDirective
+from screens.models import ScheduleRule
 
 
 class BuildSchedule(CronJobBase):
@@ -12,8 +12,8 @@ class BuildSchedule(CronJobBase):
     def do(self):
         today = timezone.now()
         upper_bound = timezone.timedelta(days=7)
-        for builder_directive in ScheduleBuilderDirective.objects.filter(starts__lt=upper_bound):
-            builder_directive.generate_parts(7)
+        for rule in ScheduleRule.objects.filter(starts__lt=upper_bound):
+            rule.generate_parts(7)
 
     def is_expired(self):
         pass

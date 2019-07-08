@@ -11,7 +11,7 @@ from screens.models.playlist import Playlist
 from screens.models.schedule import Schedule
 
 
-class ScheduleBuilderDirective(models.Model):
+class ScheduleRule(models.Model):
     playlist = models.ForeignKey(to=Playlist, on_delete=models.CASCADE)
     schedule = models.ForeignKey(to=Schedule, on_delete=models.CASCADE)
     starts = models.DateField()
@@ -39,6 +39,6 @@ class ScheduleBuilderDirective(models.Model):
         return not bool(self.occurrences.after(timezone.datetime.today(), inc=True))
 
 
-@receiver(post_save, sender=ScheduleBuilderDirective)
+@receiver(post_save, sender=ScheduleRule)
 def on_save(sender, **kwargs):
     kwargs['instance'].regenerate_parts()

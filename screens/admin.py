@@ -1,10 +1,23 @@
 from django.contrib import admin
 
 # Register your models here.
-from screens.models import Playlist, Schedule, ScheduleBuilderDirective, Screen, Source
+from screens.models import Playlist, Schedule, ScheduleRule, Screen, Source, PlaylistEntry
 
-admin.site.register(Playlist)
+
+class PlaylistEntryInline(admin.TabularInline):
+    model = PlaylistEntry
+    extra = 3
+
+
+class PlaylistDisplay(admin.ModelAdmin):
+    fieldsets = [
+        (None,               {'fields': ['name', 'description']}),
+    ]
+    inlines = [PlaylistEntryInline]
+
+
+admin.site.register(Playlist, PlaylistDisplay)
 admin.site.register(Schedule)
-admin.site.register(ScheduleBuilderDirective)
+admin.site.register(ScheduleRule)
 admin.site.register(Screen)
 admin.site.register(Source)

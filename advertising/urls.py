@@ -18,7 +18,9 @@ from django.contrib import admin
 from django.urls import path
 
 from advertising import settings
+from screens import views as screenviews
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', screenviews.view_screen)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

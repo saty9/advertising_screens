@@ -12,15 +12,19 @@ def get_file_path(instance, filename):
 
 class Source(models.Model):
     IMAGE = 'IMG'
-    VIDEO = ' VID'
+    VIDEO = 'VID'
     IFRAME = 'FRM'
     types = (
         (IMAGE, 'Image'),
         (VIDEO, 'Video'),
-        (IFRAME, 'Yearly'),
+        (IFRAME, 'IFrame'),
     )
     type = models.CharField(max_length=3, choices=types)
     name = models.TextField()
     file = models.FileField(upload_to=get_file_path,
-                            null=True)
+                            null=True,
+                            blank=True)
     url = models.URLField(blank=True)
+
+    def __str__(self):
+        return self.name

@@ -1,6 +1,6 @@
 from django_cron import CronJobBase, Schedule
 
-from screens.models import ScheduleBuilderDirective
+from screens.models import ScheduleRule
 
 
 class CleanUpSchedule(CronJobBase):
@@ -9,5 +9,5 @@ class CleanUpSchedule(CronJobBase):
     code = 'screens.cleanup_schedule'
 
     def do(self):
-        for builder_directive in filter(lambda x: x.is_expired(), ScheduleBuilderDirective.objects.all()):
-            builder_directive.delete()
+        for rule in filter(lambda x: x.is_expired(), ScheduleRule.objects.all()):
+            rule.delete()
