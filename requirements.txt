@@ -1,0 +1,4 @@
+Django
+django_cron
+django-recurrence
+django-cleanup
