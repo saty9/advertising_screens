@@ -12,7 +12,9 @@ class Playlist(models.Model):
 
     def get_sources(self):
         if self.plays_everything:
-            return Source.objects.exclude(exclude_from_play_all=True)
+            return Source.objects\
+                .exclude(exclude_from_play_all=True)\
+                .exclude(pk=self.interspersed_source_id)
         else:
             return Source.objects\
                 .filter(playlistentry__playlist=self)\
