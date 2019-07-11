@@ -22,5 +22,6 @@ from screens import views as screenviews
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', screenviews.view_screen)
+    path('', screenviews.view_screen),
+    path('meta', screenviews.get_meta, name="screen-meta-view"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

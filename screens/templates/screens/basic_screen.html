@@ -78,8 +78,14 @@
     var displaytime = 10000;
     var x = document.getElementsByClassName("advert");
     var i = 0;
+    var current_playlist = {{ current_playlist }};
+    var playlist_last_updated = "{{ playlist_last_updated }}";
 
-    window.onload = function screentest() {
+    window.onload = function () {
+        screentest();
+        window.setInterval(check_for_changes, 1000*60);
+    };
+    function screentest() {
         i = i % x.length;
         if (django.jQuery(x[i]).hasClass('video') === true) {
             x[i].style.opacity = 1;
@@ -99,6 +105,16 @@
                 i = i + 1;
             }
         }
+    }
+    function check_for_changes(){
+        django.jQuery.getJSON("{% url "screen-meta-view" %}", success = (data) => {
+            let change = false;
+            change = data['current_playlist'] != current_playlist;
+            change = change || (data['playlist_last_updated'] != playlist_last_updated);
+            if (change) {
+                location.reload();
+            }
+        })
     }
 </script>
 </body>
