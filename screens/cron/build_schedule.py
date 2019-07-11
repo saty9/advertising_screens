@@ -11,7 +11,7 @@ class BuildSchedule(CronJobBase):
 
     def do(self):
         today = timezone.now()
-        upper_bound = timezone.timedelta(days=7)
+        upper_bound = today + timezone.timedelta(days=7)
         for rule in ScheduleRule.objects.filter(starts__lt=upper_bound):
             rule.generate_parts(7)
 
