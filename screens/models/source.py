@@ -25,6 +25,7 @@ class Source(models.Model):
                             null=True,
                             blank=True)
     url = models.URLField(blank=True)
+    exclude_from_play_all = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
