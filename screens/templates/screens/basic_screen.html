@@ -60,6 +60,17 @@
     {% elif source.type == "FRM" %}
         <iframe src="{{ source.url }}" class="advert image"></iframe>
     {% endif %}
+    {% if interspersed %}
+        {% if interspersed.type == "IMG" %}
+            <img src="{{ interspersed.file.url }}" class="advert image">
+        {% elif interspersed.type == "VID" %}
+            <video muted class="advert video">
+                <source src="{{ interspersed.file.url }}" type="video/mp4">
+            </video>
+        {% elif interspersed.type == "FRM" %}
+            <iframe src="{{ interspersed.url }}" class="advert image"></iframe>
+        {% endif %}
+    {% endif %}
 {% endfor %}
 <script>
     //Marketing Screen Slideshow

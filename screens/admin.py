@@ -11,7 +11,7 @@ class PlaylistEntryInline(admin.TabularInline):
 
 class PlaylistDisplay(admin.ModelAdmin):
     fieldsets = [
-        (None,               {'fields': ['name', 'description']}),
+        (None,               {'fields': ['name', 'description', 'interspersed_source']}),
     ]
     inlines = [PlaylistEntryInline]
 

@@ -18,7 +18,8 @@ def view_screen(request):
     if screen.schedule:
         current_playlist = screen.schedule.get_playlist()
         view_dict = {
-            'playlist': current_playlist.get_sources()
+            'playlist': current_playlist.get_sources(),
+            'interspersed': current_playlist.interspersed_source
         }
         return render(request, 'screens/basic_screen.html', view_dict)
     else:
