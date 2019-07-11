@@ -9,11 +9,12 @@ def get_client_ip(request):
     ip = request.META.get('REMOTE_ADDR')
     return ip
 
+
 def view_screen(request):
     ip = get_client_ip(request)
     (screen, _) = models.Screen.objects.get_or_create(ip=ip,
-                                                 defaults={'name': 'Unknown Device',
-                                                           'schedule': models.Schedule.get_default()})
+                                                      defaults={'name': request.META['REMOTE_HOST'] or "Unknown Device",
+                                                                'schedule': models.Schedule.get_default()})
     if screen.schedule:
         current_playlist = screen.schedule.get_playlist()
         view_dict = {
