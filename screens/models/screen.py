@@ -7,3 +7,6 @@ class Screen(models.Model):
     name = models.TextField()
     schedule = models.ForeignKey(Schedule, on_delete=models.PROTECT, null=True)
     ip = models.GenericIPAddressField()
+
+    def __str__(self):
+        return self.name
