@@ -18,7 +18,7 @@ def view_screen(request):
     if screen.schedule:
         current_playlist = screen.schedule.get_playlist()
         view_dict = {
-            'playlist': Source.objects.filter(playlistentry__playlist=current_playlist).order_by('playlistentry__number')
+            'playlist': current_playlist.get_sources()
         }
         return render(request, 'screens/basic_screen.html', view_dict)
     else:
