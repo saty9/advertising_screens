@@ -33,3 +33,4 @@ admin.site.register(Schedule, ScheduleDisplay)
 admin.site.register(ScheduleRule)
 admin.site.register(Screen)
 admin.site.register(Source)
+admin.site.site_header = "Display Screen Admin"
