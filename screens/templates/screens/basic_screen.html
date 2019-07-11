@@ -88,13 +88,18 @@
     function screentest() {
         i = i % x.length;
         if (django.jQuery(x[i]).hasClass('video') === true) {
-            x[i].style.opacity = 1;
-            x[i].play();
-            x[i].onended = function () {
-                x[i].style.opacity = 0;
-                i = i + 1;
-                screentest();
-            };
+            if (x[i].readyState == 4) {
+                x[i].style.opacity = 1;
+                x[i].play();
+                x[i].onended = function () {
+                    x[i].style.opacity = 0;
+                    i = i + 1;
+                    screentest();
+                };
+            } else {
+                i += 1;
+                screentest()
+            }
         } else if (django.jQuery(x[i]).hasClass('image') === true) {
             x[i].style.opacity = 1;
             window.setTimeout(screentest, displaytime + 1);
