@@ -126,3 +126,8 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'media'))
 MEDIA_URL = '/media/'
+
+CRON_CLASSES = [
+    "screens.cron.BuildSchedule",
+    "screens.cron.CleanUpSchedule"
+]
