@@ -1,8 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from screens import models
-from screens.models import Source
-
+import socket
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -13,7 +12,7 @@ def get_client_ip(request):
 def get_screen(request):
     ip = get_client_ip(request)
     (screen, _) = models.Screen.objects.get_or_create(ip=ip,
-                                                      defaults={'name': request.META['REMOTE_HOST'] or "Unknown Device",
+                                                      defaults={'name': socket.gethostbyaddr(ip)[0] or "Unknown Device",
                                                                 'schedule': models.Schedule.get_default()})
     return screen
 
