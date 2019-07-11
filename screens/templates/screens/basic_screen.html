@@ -51,25 +51,13 @@
 
 <body>
 {% for source in playlist %}
-    {% if source.type == "IMG" %}
-        <img src="{{ source.file.url }}" class="advert image">
-    {% elif source.type == "VID" %}
-        <video muted class="advert video">
-            <source src="{{ source.file.url }}" type="video/mp4">
-        </video>
-    {% elif source.type == "FRM" %}
-        <iframe src="{{ source.url }}" class="advert image"></iframe>
-    {% endif %}
+    {% include "screens/display_source.html" with source=source %}
     {% if interspersed %}
-        {% if interspersed.type == "IMG" %}
-            <img src="{{ interspersed.file.url }}" class="advert image">
-        {% elif interspersed.type == "VID" %}
-            <video muted class="advert video">
-                <source src="{{ interspersed.file.url }}" type="video/mp4">
-            </video>
-        {% elif interspersed.type == "FRM" %}
-            <iframe src="{{ interspersed.url }}" class="advert image"></iframe>
-        {% endif %}
+        {% include "screens/display_source.html" with source=interspersed %}
+    {% endif %}
+{% empty %}
+    {% if interspersed %}
+        {% include "screens/display_source.html" with source=interspersed %}
     {% endif %}
 {% endfor %}
 <script>
@@ -83,8 +71,9 @@
 
     window.onload = function () {
         screentest();
-        window.setInterval(check_for_changes, 1000*60);
+        window.setInterval(check_for_changes, 1000 * 60);
     };
+
     function screentest() {
         i = i % x.length;
         if (django.jQuery(x[i]).hasClass('video') === true) {
@@ -111,7 +100,8 @@
             }
         }
     }
-    function check_for_changes(){
+
+    function check_for_changes() {
         django.jQuery.getJSON("{% url "screen-meta-view" %}", success = (data) => {
             let change = false;
             change = data['current_playlist'] != current_playlist;

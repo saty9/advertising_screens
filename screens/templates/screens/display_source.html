@@ -1,0 +1,9 @@
+{% if source.type == "IMG" %}
+    <img src="{{ source.file.url }}" class="advert image">
+{% elif source.type == "VID" %}
+    <video muted class="advert video">
+        <source src="{{ source.file.url }}" type="video/mp4">
+    </video>
+{% elif source.type == "FRM" %}
+    <iframe src="{{ source.url }}" class="advert image"></iframe>
+{% endif %}
