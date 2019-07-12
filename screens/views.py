@@ -9,10 +9,17 @@ def get_client_ip(request):
     return ip
 
 
+def get_client_hostname(ip):
+    try:
+        return socket.gethostbyaddr(ip)[0] or "Unknown Device"
+    except socket.error:
+        return "Unknown Device"
+
+
 def get_screen(request):
     ip = get_client_ip(request)
     (screen, _) = models.Screen.objects.get_or_create(ip=ip,
-                                                      defaults={'name': socket.gethostbyaddr(ip)[0] or "Unknown Device",
+                                                      defaults={'name': get_client_hostname(ip),
                                                                 'schedule': models.Schedule.get_default()})
     return screen
 
