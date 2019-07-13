@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'screens',
+    'room_schedules',
     'django_cron',
     'recurrence',
     'django_cleanup.apps.CleanupConfig',  # TODO will need to detect image load failure and reload page if it occurs
@@ -123,11 +124,16 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = "/srv/static"
 
 MEDIA_ROOT = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'media'))
 MEDIA_URL = '/media/'
 
 CRON_CLASSES = [
     "screens.cron.BuildSchedule",
-    "screens.cron.CleanUpSchedule"
+    "screens.cron.CleanUpSchedule",
+    "room_schedules.cron.BuildSchedule",
+    "room_schedules.cron.CleanUpSchedule",
 ]
+
+ARTIFAX_API_KEY = "OVERRIDE THIS IN settings.py"

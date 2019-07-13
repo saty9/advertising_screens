@@ -2,3 +2,4 @@ Django
 django_cron
 django-recurrence
 django-cleanup
+httplib2
