@@ -7,7 +7,7 @@ class Venue(models.Model):
     artifax_id = models.IntegerField(unique=True)
 
     def __str__(self):
-        return "{}: {}".format(self.pk, self.artifax_id)
+        return "{}: {}".format(self.pk, self.name)
 
     def update_events(self):
         events = get_todays_events_simple(self.artifax_id)
