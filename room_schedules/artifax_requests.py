@@ -8,7 +8,7 @@ from advertising.settings import ARTIFAX_API_KEY as API_KEY
 
 VENUE_ID = 2
 
-INTERESTING_FIELDS = ['activity_detail', 'time', 'room_name', 'finish_time', 'organiser', 'room_id', 'event_id']
+INTERESTING_FIELDS = ['activity_detail', 'time', 'room_name', 'finish_time', 'organiser', 'room_id', 'event_id', 'cancelled']
 
 
 def get_room_list():
@@ -56,16 +56,18 @@ def get_finish_time(event: dict):
     """
     :param event: event to get a time for
     :return: doors finish time of an event if available and the end time if not
-    :rtype: datetime.time
+    :rtype: datetime.datetime
     """
     try:
         custom_forms = event['custom_forms']
         schedule = filter(lambda x: x['custom_form_name'] == 'Schedule', custom_forms).__next__()
         time = schedule['custom_form_sections'][0]['custom_form_elements'][1]['custom_form_data_value']
-        out = datetime.datetime.strptime(time, "%H:%M:%S")
+        out = datetime.datetime.strptime(time + ' ' + event['date'], "%H:%M:%S %Y-%m-%d")
     except (KeyError, IndexError, StopIteration, ValueError):
-        out = datetime.datetime.strptime(event['end_time'][:-1], "%H:%M:%S.%f")
-    return out.time()
+        out = datetime.datetime.strptime(event['end_time'][:-1] + ' ' + event['date'], "%H:%M:%S.%f %Y-%m-%d")
+    if out.time() <= datetime.time(hour=HOUR_BREAK_POINT):
+        out += datetime.timedelta(days=1)
+    return out
 
 
 def get_event_organiser(event: dict):
@@ -104,6 +106,7 @@ def events_happening_on_day(day: datetime.date, venue_id):
     :rtype: list of dict of (str, str)
     """
     h = httplib2.Http(".cache")
+    events = []
     try:
         base_url = BASE_ADDRESS + "/api/arrangements/event?venue_id={}&public_status=1&date=single&start_date={}"
         url = base_url.format(venue_id, day)
@@ -131,6 +134,8 @@ def events_happening_on_day(day: datetime.date, venue_id):
     events = list(filter(time_filter, events))  # filter to get events by 'fringe time'
     list(map(lambda x: x.update({'finish_time': get_finish_time(x)}), events))  # add event finish_time data
     list(map(lambda x: x.update({'organiser': get_event_organiser(x)}), events))  # add event organiser
+    list(map(lambda x: x.update({'cancelled': x['status_id'] == 7}), events))  # add cancelled info
+
     return events
 
 

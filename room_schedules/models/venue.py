@@ -22,4 +22,5 @@ class Venue(models.Model):
                                                                 'room': room,
                                                                 'start_time': event['time'],
                                                                 'end_time': event['finish_time'],
+                                                                'cancelled': event['cancelled']
                                                                 })
