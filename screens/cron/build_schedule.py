@@ -13,7 +13,7 @@ class BuildSchedule(CronJobBase):
         today = timezone.now()
         upper_bound = today + timezone.timedelta(days=7)
         for rule in ScheduleRule.objects.filter(starts__lt=upper_bound):
-            rule.generate_parts(7)
+            rule.regenerate_parts()
 
     def is_expired(self):
         pass
