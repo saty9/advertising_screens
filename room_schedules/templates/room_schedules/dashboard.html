@@ -21,13 +21,11 @@
 
 </style>
     <div class="events">
-        <div class="date">{% if room %}{{ room.name }} - {% endif %}{{ current_date }}</div>
+        <div class="date">{% if room %}{{ room.name }} - {% endif %}{{ current_date|date:'l j' }}<sup>{{ current_date|date:'S' }}</sup> {{ current_date|date:'F' }}</div>
         {% for event in events %}
         <div class="row light">
             <div class="time">
-                <strong>{{ event.start_time|time:'H:i' }}</strong>
-                <br>
-                {{ event.end_time|time:'H:i' }}
+                <strong>{{ event.start_time|time:'H:i' }} - {{ event.end_time|time:'H:i' }}</strong>
             </div>
             <div class="venue">{{ event.room.name }}</div>
             <div class="group">
