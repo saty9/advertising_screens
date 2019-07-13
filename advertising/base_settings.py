@@ -132,6 +132,7 @@ MEDIA_URL = '/media/'
 CRON_CLASSES = [
     "screens.cron.BuildSchedule",
     "screens.cron.CleanUpSchedule",
+    "screens.cron.CleanUpSources",
     "room_schedules.cron.BuildSchedule",
     "room_schedules.cron.CleanUpSchedule",
 ]

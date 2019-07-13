@@ -26,6 +26,7 @@ class Source(models.Model):
                             blank=True)
     url = models.URLField(blank=True)
     exclude_from_play_all = models.BooleanField(default=False)
+    expires_at = models.DateTimeField(blank=True, null=True, default=None)
 
     def __str__(self):
         return self.name
