@@ -36,7 +36,7 @@ class ScheduleRule(models.Model):
         self.generate_parts()
 
     def is_expired(self):
-        return not bool(self.occurrences.after(timezone.datetime.today(), inc=True))
+        return not bool(self.occurrences.after(timezone.datetime.today() - timezone.timedelta(days=2), inc=True))
 
 
 @receiver(post_save, sender=ScheduleRule)
