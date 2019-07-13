@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import Signal, receiver
 from django.utils import timezone
 
@@ -42,3 +42,8 @@ class ScheduleRule(models.Model):
 @receiver(post_save, sender=ScheduleRule)
 def on_save(sender, **kwargs):
     kwargs['instance'].regenerate_parts()
+
+@receiver(pre_save, sender=ScheduleRule)
+def on_save(sender, **kwargs):
+    if kwargs['instance'].end_time == datetime.min.time():
+        kwargs['instance'].end_time = datetime.max.time()
