@@ -44,6 +44,6 @@ def on_save(sender, **kwargs):
     kwargs['instance'].regenerate_parts()
 
 @receiver(pre_save, sender=ScheduleRule)
-def on_save(sender, **kwargs):
+def before_save(sender, **kwargs):
     if kwargs['instance'].end_time == datetime.min.time():
         kwargs['instance'].end_time = datetime.max.time()
