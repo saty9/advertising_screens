@@ -128,6 +128,7 @@ STATIC_ROOT = "/srv/static"
 
 MEDIA_ROOT = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'media'))
 MEDIA_URL = '/media/'
+FILE_UPLOAD_PERMISSIONS = 0o644
 
 CRON_CLASSES = [
     "screens.cron.BuildSchedule",
