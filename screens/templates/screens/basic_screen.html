@@ -87,7 +87,7 @@
                 };
             } else {
                 i += 1;
-                screentest()
+                window.setTimeout(screentest, 500)
             }
         } else if (django.jQuery(x[i]).hasClass('image') === true) {
             x[i].style.opacity = 1;
