@@ -29,10 +29,6 @@ class ScheduleRule(models.Model):
             if self.end_time < self.start_time:
                 self.schedulepart_set.create(playlist=self.playlist,
                                              start_time=timezone.datetime.combine(x, self.start_time),
-                                             end_time=timezone.datetime.combine(x, datetime.max.time()),
-                                             priority=self.priority)
-                self.schedulepart_set.create(playlist=self.playlist,
-                                             start_time=timezone.datetime.combine(x + timezone.timedelta(days=1), datetime.min.time()),
                                              end_time=timezone.datetime.combine(x + timezone.timedelta(days=1), self.end_time),
                                              priority=self.priority)
             else:
