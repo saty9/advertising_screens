@@ -26,10 +26,20 @@ class ScheduleRule(models.Model):
                                                now + timezone.timedelta(days=days_in_advance),
                                                inc=True)
         for x in occurrences:
-            self.schedulepart_set.create(playlist=self.playlist,
-                                         start_time=timezone.datetime.combine(x, self.start_time),
-                                         end_time=timezone.datetime.combine(x, self.end_time),
-                                         priority=self.priority)
+            if self.end_time < self.start_time:
+                self.schedulepart_set.create(playlist=self.playlist,
+                                             start_time=timezone.datetime.combine(x, self.start_time),
+                                             end_time=timezone.datetime.combine(x, datetime.max.time()),
+                                             priority=self.priority)
+                self.schedulepart_set.create(playlist=self.playlist,
+                                             start_time=timezone.datetime.combine(x + timezone.timedelta(days=1), datetime.min.time()),
+                                             end_time=timezone.datetime.combine(x + timezone.timedelta(days=1), self.end_time),
+                                             priority=self.priority)
+            else:
+                self.schedulepart_set.create(playlist=self.playlist,
+                                             start_time=timezone.datetime.combine(x, self.start_time),
+                                             end_time=timezone.datetime.combine(x, self.end_time),
+                                             priority=self.priority)
 
     def regenerate_parts(self):
         self.schedulepart_set.all().delete()
@@ -42,6 +52,7 @@ class ScheduleRule(models.Model):
 @receiver(post_save, sender=ScheduleRule)
 def on_save(sender, **kwargs):
     kwargs['instance'].regenerate_parts()
+
 
 @receiver(pre_save, sender=ScheduleRule)
 def before_save(sender, **kwargs):
