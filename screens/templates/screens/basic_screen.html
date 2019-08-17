@@ -77,7 +77,6 @@
     function screentest() {
         i = i % x.length;
         if (django.jQuery(x[i]).hasClass('video') === true) {
-            x[i].currentTime = 0;
             if (x[i].readyState == 4) {
                 x[i].style.opacity = 1;
                 x[i].play();
