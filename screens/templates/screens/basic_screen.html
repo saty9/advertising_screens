@@ -72,6 +72,11 @@
     window.onload = function () {
         screentest();
         window.setInterval(check_for_changes, 1000 * 60);
+        for(let j = 0; j < x.length; j++) {
+          if (django.jQuery(x[j]).hasClass('video') === true) {
+            x[j].currentTime = 0;
+          }
+        }
     };
 
     function screentest() {
@@ -82,6 +87,9 @@
                 x[i].play();
                 x[i].onended = function () {
                     x[i].style.opacity = 0;
+                    if (x[i].readyState == 2){
+                      x[i].currentTime = 0;
+                    }
                     i = i + 1;
                     screentest();
                 };
