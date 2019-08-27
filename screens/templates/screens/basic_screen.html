@@ -87,8 +87,14 @@
                 x[i].play();
                 x[i].onended = function () {
                     x[i].style.opacity = 0;
-                    if (x[i].readyState == 2){
+                    if (x.length == 1){
                       x[i].currentTime = 0;
+                    } else {
+                        window.setTimeout(
+                            function () {
+                                x[i].currentTime = 0
+                            },
+                            2000)
                     }
                     i = i + 1;
                     screentest();
