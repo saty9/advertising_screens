@@ -90,9 +90,10 @@
                     if (x.length == 1){
                       x[i].currentTime = 0;
                     } else {
+                        let j = i;
                         window.setTimeout(
                             function () {
-                                x[i].currentTime = 0
+                                x[j].currentTime = 0
                             },
                             2000)
                     }
