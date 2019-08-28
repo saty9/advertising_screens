@@ -7,9 +7,7 @@ from screens.models import Playlist, Schedule, ScheduleRule, Screen, Source, Pla
 
 class PlaylistEntryInline(OrderableAdmin, admin.TabularInline):
     model = PlaylistEntry
-    #extra = 3
     ordering_field = 'number'
-    #ordering_field_hide_input = True
 
 
 class PlaylistDisplay(admin.ModelAdmin):
@@ -31,9 +29,17 @@ class ScheduleDisplay(admin.ModelAdmin):
     inlines = [ScheduleRuleInline]
 
 
+class SourceDisplay(admin.ModelAdmin):
+    class Media:
+        js = (
+            "admin/js/jquery.init.js",
+            'screens/js/source_form.js',
+        )
+
+
 admin.site.register(Playlist, PlaylistDisplay)
 admin.site.register(Schedule, ScheduleDisplay)
 admin.site.register(ScheduleRule)
 admin.site.register(Screen)
-admin.site.register(Source)
+admin.site.register(Source, SourceDisplay)
 admin.site.site_header = "Display Screen Admin"
