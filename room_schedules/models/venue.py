@@ -1,4 +1,6 @@
 from django.db import models
+from django.urls import reverse
+
 from room_schedules.artifax_requests import get_todays_events_simple
 
 
@@ -8,6 +10,11 @@ class Venue(models.Model):
 
     def __str__(self):
         return "{}: {}".format(self.pk, self.name)
+
+    def get_absolute_url(self):
+        return reverse('event_schedule/venue', args=[str(self.id)])
+
+
 
     def update_events(self):
         events = get_todays_events_simple(self.artifax_id)

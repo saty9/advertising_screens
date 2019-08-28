@@ -18,6 +18,6 @@ from django.urls import path
 from .views import show_venue, show_room
 
 urlpatterns = [
-    path('<int:venue_id>', show_venue),
-    path('<int:venue_id>/<int:room_id>', show_room)
+    path('<int:venue_id>', show_venue, name="event_schedule/venue"),
+    path('<int:venue_id>/<int:room_id>', show_room, name="event_schedule/room")
 ]
