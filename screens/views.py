@@ -37,6 +37,7 @@ def view_screen(request, screen_id):
             view_dict = {
                 'playlist': current_playlist.get_sources(),
                 'interspersed': current_playlist.interspersed_source,
+                'screen_interspersed': screen.interspersed_source,
                 "current_playlist": current_playlist.pk,
                 "playlist_last_updated": current_playlist.last_updated.isoformat()
             }
