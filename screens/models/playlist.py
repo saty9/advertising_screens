@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 from screens.models import Source
 
@@ -23,3 +24,6 @@ class Playlist(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('screens/playlist_view', args=[str(self.id)])

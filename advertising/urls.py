@@ -23,7 +23,9 @@ from room_schedules import urls as room_schedules_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', screenviews.view_screen),
+    path('', screenviews.view_screen_automatic),
+    path('screen/<int:screen_id>', screenviews.view_screen, name="screens/screen_view"),
+    path('playlist/<int:playlist_id>', screenviews.view_playlist, name="screens/playlist_view"),
     path('meta', screenviews.get_meta, name="screen-meta-view"),
     path('event_schedules/', include(room_schedules_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
