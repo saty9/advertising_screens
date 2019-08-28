@@ -1,12 +1,15 @@
+from admin_ordering.admin import OrderableAdmin
 from django.contrib import admin
 
 # Register your models here.
 from screens.models import Playlist, Schedule, ScheduleRule, Screen, Source, PlaylistEntry
 
 
-class PlaylistEntryInline(admin.TabularInline):
+class PlaylistEntryInline(OrderableAdmin, admin.TabularInline):
     model = PlaylistEntry
-    extra = 3
+    #extra = 3
+    ordering_field = 'number'
+    #ordering_field_hide_input = True
 
 
 class PlaylistDisplay(admin.ModelAdmin):

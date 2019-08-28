@@ -9,3 +9,10 @@ class PlaylistEntry(models.Model):
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     number = models.IntegerField()
+
+    class Meta:
+        ordering = ['number']
+
+    def __str__(self):
+        return ""
+

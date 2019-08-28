@@ -3,3 +3,4 @@ django_cron
 django-recurrence
 django-cleanup
 httplib2
+django-admin-ordering

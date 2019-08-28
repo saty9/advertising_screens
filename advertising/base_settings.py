@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'room_schedules',
     'django_cron',
     'recurrence',
+    'admin_ordering',
     'django_cleanup.apps.CleanupConfig',  # TODO will need to detect image load failure and reload page if it occurs
 ]
 
