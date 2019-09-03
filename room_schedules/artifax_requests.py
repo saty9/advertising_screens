@@ -122,7 +122,7 @@ def events_happening_on_day(day: datetime.date, venue_id):
         else:
             new_events = json.loads(content)
     except Exception:
-        print("An error occurred while loading events from venue with id: {}")
+        print("An error occurred while loading events from venue with id: {}".format(venue_id))
         new_events = []
     events.extend(new_events)
     list(map(lambda x: x.update({'time': get_start_time(x)}), events))  # add event time data
