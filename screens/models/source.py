@@ -28,6 +28,7 @@ class Source(models.Model):
     url = models.URLField(blank=True, verbose_name="Website Address", help_text="only required if website type")
     exclude_from_play_all = models.BooleanField(default=False)
     expires_at = models.DateTimeField(blank=True, null=True, default=None)
+    valid_from = models.DateTimeField(blank=True, null=True, default=None)
 
     def __str__(self):
         return self.name
