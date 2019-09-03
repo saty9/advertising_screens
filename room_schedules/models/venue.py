@@ -14,15 +14,14 @@ class Venue(models.Model):
     def get_absolute_url(self):
         return reverse('event_schedule/venue', args=[str(self.id)])
 
-
-
     def update_events(self):
+        from room_schedules.models import Room
+        from room_schedules.models import Event
         events = get_todays_events_simple(self.artifax_id)
+        events_that_should_exist = []
         for event in events:
-            from room_schedules.models import Room
             room, _ = Room.objects.update_or_create(artifax_id=event['room_id'], defaults={'name': event['room_name'],
                                                                                            'venue': self})
-            from room_schedules.models import Event
             event, _ = Event.objects.update_or_create(artifax_id=event['event_id'],
                                                       defaults={'name': event['activity_detail'][:200],
                                                                 'organiser': event['organiser'][:200],
@@ -31,3 +30,5 @@ class Venue(models.Model):
                                                                 'end_time': event['finish_time'],
                                                                 'cancelled': event['cancelled']
                                                                 })
+            events_that_should_exist.append(event['event_id'])
+        Event.objects.exclude(artifax_id__in=events_that_should_exist).delete()
