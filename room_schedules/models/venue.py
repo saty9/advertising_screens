@@ -30,5 +30,5 @@ class Venue(models.Model):
                                                                 'end_time': event['finish_time'],
                                                                 'cancelled': event['cancelled']
                                                                 })
-            events_that_should_exist.append(event['event_id'])
-        Event.objects.exclude(artifax_id__in=events_that_should_exist).delete()
+            events_that_should_exist.append(event.id)
+        Event.objects.exclude(pk__in=events_that_should_exist).delete()
