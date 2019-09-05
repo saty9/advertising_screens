@@ -19,16 +19,22 @@ class Venue(models.Model):
         from room_schedules.models import Event
         events = get_todays_events_simple(self.artifax_id)
         events_that_should_exist = []
+        new_events = 0
         for event in events:
             room, _ = Room.objects.update_or_create(artifax_id=event['room_id'], defaults={'name': event['room_name'],
                                                                                            'venue': self})
-            event, _ = Event.objects.update_or_create(artifax_id=event['event_id'],
-                                                      defaults={'name': event['activity_detail'][:200],
-                                                                'organiser': event['organiser'][:200],
-                                                                'room': room,
-                                                                'start_time': event['time'],
-                                                                'end_time': event['finish_time'],
-                                                                'cancelled': event['cancelled']
-                                                                })
+            event, new_event = Event.objects.update_or_create(artifax_id=event['event_id'],
+                                                              defaults={'name': event['activity_detail'][:200],
+                                                                        'organiser': event['organiser'][:200],
+                                                                        'room': room,
+                                                                        'start_time': event['time'],
+                                                                        'end_time': event['finish_time'],
+                                                                        'cancelled': event['cancelled']
+                                                                        })
             events_that_should_exist.append(event.id)
-        Event.objects.exclude(pk__in=events_that_should_exist).delete()
+            if new_event:
+                new_events += 1
+        Event.objects.filter(room__venue=self).exclude(pk__in=events_that_should_exist).delete()
+        print("{} created {} events and updated {}".format(self.name,
+                                                           new_events,
+                                                           len(events_that_should_exist) - new_events))
