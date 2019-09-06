@@ -1,6 +1,7 @@
 import os
 import uuid
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -32,3 +33,9 @@ class Source(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.type in [self.IMAGE, self.VIDEO] and self.file._file is None:
+            raise ValidationError({'file': "File cannot be blank for image or video type sources"})
+        if self.type == self.VIDEO and self.file.name[-4:] != ".mp4":
+            raise ValidationError({'file': "Video files must have .mp4 extensions"})
