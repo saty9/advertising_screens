@@ -15,4 +15,7 @@ class Event(models.Model):
     def __str__(self):
         return "{}: {}".format(self.pk, self.name)
 
+    class Meta:
+        ordering = ['start_time', 'end_time']
+
 
