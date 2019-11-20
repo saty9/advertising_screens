@@ -17,7 +17,7 @@ class Playlist(models.Model):
         now = datetime.now()
         if self.plays_everything:
             return Source.objects\
-                .exclude(exclude_from_play_all=True)\
+                .exclude(Q(exclude_from_play_all=True) & ~Q(playlistentry__playlist=self))\
                 .exclude(pk=self.interspersed_source_id)\
                 .filter(Q(valid_from__lte=now) | Q(valid_from__isnull=True))\
                 .filter(Q(expires_at__gte=now) | Q(expires_at__isnull=True))
