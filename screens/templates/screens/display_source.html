@@ -1,9 +1,17 @@
-{% if source.type == "IMG" %}
-    <img src="{{ source.file.url }}" class="advert image">
-{% elif source.type == "VID" %}
+{% if source.source.type == "IMG" %}
+    <img src="{{ source.source.file.url }}" class="advert image"
+         {% if source.duration %}
+         data-duration="{{ source.duration }}"
+         {% endif %}
+    >
+{% elif source.source.type == "VID" %}
     <video class="advert video">
-        <source src="{{ source.file.url }}" type="video/mp4">
+        <source src="{{ source.source.file.url }}" type="video/mp4">
     </video>
-{% elif source.type == "FRM" %}
-    <iframe src="{{ source.url }}" class="advert image"></iframe>
+{% elif source.source.type == "FRM" %}
+    <iframe src="{{ source.source.url }}" class="advert image"
+            {% if source.duration %}
+            data-duration="{{ source.duration }}"
+            {% endif %}
+    ></iframe>
 {% endif %}

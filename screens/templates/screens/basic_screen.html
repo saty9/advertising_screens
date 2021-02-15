@@ -112,8 +112,9 @@
             }
         } else if (django.jQuery(x[i]).hasClass('image') === true) {
             x[i].style.opacity = 1;
-            window.setTimeout(screentest, displaytime + 1);
-            window.setTimeout(fadeout, displaytime);
+            let duration = x[i].dataset.duration ? parseInt(x[i].dataset.duration * 1000) : displaytime;
+            window.setTimeout(screentest, duration + 1);
+            window.setTimeout(fadeout, duration);
 
             function fadeout() {
                 x[i].style.opacity = 0;
