@@ -37,8 +37,8 @@ def view_screen(request, screen_id):
             current_playlist = screen.schedule.get_playlist()
             view_dict = {
                 'playlist': current_playlist.get_sources(),
-                'interspersed': current_playlist.interspersed_source,
-                'screen_interspersed': screen.interspersed_source,
+                'interspersed': models.PlaylistEntry(source=current_playlist.interspersed_source),
+                'screen_interspersed': models.PlaylistEntry(source=screen.interspersed_source),
                 "current_playlist": current_playlist.pk,
                 "playlist_last_updated": current_playlist.last_updated.isoformat()
             }
@@ -54,7 +54,7 @@ def view_playlist(request, playlist_id):
         current_playlist = models.Playlist.objects.get(id=playlist_id)
         view_dict = {
             'playlist': current_playlist.get_sources(),
-            'interspersed': current_playlist.interspersed_source,
+            'interspersed': models.PlaylistEntry(source=current_playlist.interspersed_source),
             "current_playlist": current_playlist.pk,
             "playlist_last_updated": current_playlist.last_updated.isoformat()
         }
