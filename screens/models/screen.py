@@ -1,5 +1,7 @@
 from django.db import models
 from django.urls import reverse
+from datetime import datetime, timedelta
+from django.db.models import Q
 
 from screens.models import Source
 from screens.models.schedule import Schedule
@@ -15,6 +17,12 @@ class Screen(models.Model):
                                             blank=True,
                                             help_text="Optional (you probably want an event schedule here)")
     ip = models.GenericIPAddressField()
+    last_seen = models.DateTimeField()
+    
+    def online(self):
+        return self.last_seen and self.last_seen >= datetime.now()-timedelta(minutes=1)
+    online.boolean = True
+        
 
     def __str__(self):
         return self.name

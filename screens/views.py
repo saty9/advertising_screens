@@ -1,6 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from screens import models
+from datetime import datetime
 import socket
 
 def get_client_ip(request):
@@ -66,6 +67,8 @@ def view_playlist(request, playlist_id):
 def get_meta(request):
     screen = get_screen(request)
     playlist = screen.schedule.get_playlist()
+    screen.last_seen = datetime.now()
+    screen.save()
     out = {"current_playlist": playlist.pk,
            "playlist_last_updated": playlist.last_updated.isoformat()}
     return JsonResponse(out)
