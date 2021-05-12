@@ -44,7 +44,7 @@ def view_screen(request, screen_id):
             }
             return render(request, 'screens/basic_screen.html', view_dict)
         else:
-            return HttpResponse("No playlist set for this screen")
+            return HttpResponse ("<meta http-equiv='refresh' content='60'/>No playlist set for this screen")
     except models.Screen.DoesNotExist:
         return HttpResponse("Requested screen not found")
 
