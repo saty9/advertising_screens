@@ -135,7 +135,6 @@ MEDIA_URL = '/media/'
 FILE_UPLOAD_PERMISSIONS = 0o644
 
 CRON_CLASSES = [
-    "screens.cron.BuildSchedule",
     "screens.cron.CleanUpSchedule",
     "screens.cron.CleanUpSources",
     "room_schedules.cron.BuildSchedule",
