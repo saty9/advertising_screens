@@ -36,10 +36,15 @@ class SourceDisplay(admin.ModelAdmin):
             'screens/js/source_form.js',
         )
 
+class ScreenAdmin(admin.ModelAdmin):
+    list_display = ('name', 'ip', 'online', 'last_seen')
+    
+    
+
 
 admin.site.register(Playlist, PlaylistDisplay)
 admin.site.register(Schedule, ScheduleDisplay)
 admin.site.register(ScheduleRule)
-admin.site.register(Screen)
+admin.site.register(Screen, ScreenAdmin)
 admin.site.register(Source, SourceDisplay)
 admin.site.site_header = "Display Screen Admin"
