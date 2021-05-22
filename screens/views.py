@@ -63,6 +63,46 @@ def view_playlist(request, playlist_id):
         return HttpResponse("Requested playlist not found")
 
 
+def view_screen_automatic_json(request):
+    screen = get_screen(request)
+    return view_screen_json(request, screen.id)
+
+
+def view_screen_json(request, screen_id):
+    try:
+        screen = models.Screen.objects.get(id=screen_id)
+        if screen.schedule:
+            current_playlist = screen.schedule.get_playlist()
+            return JsonResponse(render_playlist_json(current_playlist, screen_interspersed=screen.interspersed_source))
+        else:
+            return JsonResponse({"error": "no playlist assigned to this screen"}, status=404)
+    except models.Screen.DoesNotExist:
+        return JsonResponse({"error": "screen doesnt exist"}, status=404)
+
+
+def view_playlist_json(playlist_id):
+    try:
+        current_playlist = models.Playlist.objects.get(id=playlist_id)
+        return JsonResponse(render_playlist_json(current_playlist))
+    except models.Playlist.DoesNotExist:
+        return JsonResponse({"error": "playlist doesnt exist"}, status=404)
+
+
+def render_playlist_json(playlist, screen_interspersed=None):
+    interspersed = []
+    if playlist.interspersed_source:
+        interspersed.append({"src": playlist.interspersed_source.src(), "type": playlist.interspersed_source.type})
+    if screen_interspersed:
+        interspersed.append(
+            {"src": screen_interspersed.src(), "type": screen_interspersed.type})
+
+    return {
+        'playlist': list(map(lambda x: {"src": x.source.src(), "type": x.source.type, "duration": x.duration}, playlist.get_sources())),
+        'interspersed': interspersed,
+        "current_playlist": playlist.pk,
+        "playlist_last_updated": playlist.last_updated.isoformat()
+    }
+
 
 def get_meta(request):
     screen = get_screen(request)

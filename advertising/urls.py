@@ -28,6 +28,10 @@ urlpatterns = [
     path('screen/', screenviews.view_screen_automatic),
     path('screen/<int:screen_id>', screenviews.view_screen, name="screens/screen_view"),
     path('playlist/<int:playlist_id>', screenviews.view_playlist, name="screens/playlist_view"),
+    path('api/screen/', screenviews.view_screen_automatic_json),
+    path('api/screen/<int:screen_id>', screenviews.view_screen_json, name="screens/screen_view_json"),
+    path('api/playlist/<int:playlist_id>', screenviews.view_playlist_json, name="screens/playlist_view_json"),
     path('meta', screenviews.get_meta, name="screen-meta-view"),
+    path('api/meta', screenviews.get_meta, name="screen-meta-view"),
     path('event_schedules/', include(room_schedules_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

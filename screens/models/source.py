@@ -39,3 +39,8 @@ class Source(models.Model):
             raise ValidationError({'file': "File cannot be blank for image or video type sources"})
         if self.type == self.VIDEO and self.file.name[-4:] != ".mp4":
             raise ValidationError({'file': "Video files must have .mp4 extensions"})
+
+    def src(self):
+        if self.type in [self.IFRAME]:
+            return self.url
+        return self.file.url
