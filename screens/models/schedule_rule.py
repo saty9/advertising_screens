@@ -20,34 +20,8 @@ class ScheduleRule(models.Model):
     end_time = models.TimeField()
     priority = models.IntegerField()
 
-    def generate_parts(self, days_in_advance=7):
-        now = timezone.now()
-        occurrences = self.occurrences.between(datetime.combine(self.starts, datetime.min.time()),
-                                               now + timezone.timedelta(days=days_in_advance),
-                                               inc=True)
-        for x in occurrences:
-            if self.end_time < self.start_time:
-                self.schedulepart_set.create(playlist=self.playlist,
-                                             start_time=timezone.datetime.combine(x, self.start_time),
-                                             end_time=timezone.datetime.combine(x + timezone.timedelta(days=1), self.end_time),
-                                             priority=self.priority)
-            else:
-                self.schedulepart_set.create(playlist=self.playlist,
-                                             start_time=timezone.datetime.combine(x, self.start_time),
-                                             end_time=timezone.datetime.combine(x, self.end_time),
-                                             priority=self.priority)
-
-    def regenerate_parts(self):
-        self.schedulepart_set.all().delete()
-        self.generate_parts()
-
     def is_expired(self):
         return not bool(self.occurrences.after(timezone.datetime.today() - timezone.timedelta(days=2), inc=True))
-
-
-@receiver(post_save, sender=ScheduleRule)
-def on_save(sender, **kwargs):
-    kwargs['instance'].regenerate_parts()
 
 
 @receiver(pre_save, sender=ScheduleRule)

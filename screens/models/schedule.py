@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
 
 from screens.models import Playlist
 
@@ -11,14 +12,18 @@ class Schedule(models.Model):
     is_default = models.BooleanField(default=False)
 
     def get_playlist(self):
-        from screens.models import SchedulePart
-        part = SchedulePart.objects\
-            .filter(schedule_rule__schedule=self, start_time__lte=timezone.now(), end_time__gt=timezone.now())\
-            .order_by('priority').first()
-        if part:
-            return part.playlist
-        else:
-            return self.default_playlist
+        yesterday = timezone.now() - timedelta(days=1)
+        tomorrow = timezone.now() + timedelta(days=1)
+        playlist = self.default_playlist
+        priority = 999999
+        for rule in self.schedulerule_set.filter(starts__lt=timezone.now()).all():
+            if rule.priority > priority:
+                continue
+            if any(rule.occurrences.between(yesterday, tomorrow, dtstart=yesterday)):
+                playlist = rule.playlist
+                priority = rule.priority
+
+        return playlist
 
     @staticmethod
     def get_default():
