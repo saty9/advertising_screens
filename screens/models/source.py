@@ -4,6 +4,7 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.template.loader import get_template
+from django.utils import timezone
 from django.utils.html import escape, format_html
 
 
@@ -32,6 +33,7 @@ class Source(models.Model):
     exclude_from_play_all = models.BooleanField(default=False)
     expires_at = models.DateTimeField(blank=True, null=True, default=None)
     valid_from = models.DateTimeField(blank=True, null=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
