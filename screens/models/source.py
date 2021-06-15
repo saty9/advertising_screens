@@ -3,6 +3,8 @@ import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.template.loader import get_template
+from django.utils.html import escape, format_html
 
 
 def get_file_path(instance, filename):
@@ -44,3 +46,8 @@ class Source(models.Model):
         if self.type in [self.IFRAME]:
             return self.url
         return self.file.url
+
+    def image_preview(self):
+        return get_template("screens/display_source.html").render({"source": {"source": self}})
+
+    image_preview.short_description = 'Preview'
