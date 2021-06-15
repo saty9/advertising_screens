@@ -51,3 +51,13 @@ class Source(models.Model):
         return get_template("screens/display_source.html").render({"source": {"source": self}})
 
     image_preview.short_description = 'Preview'
+
+    def playlist_names(self):
+        result = set()
+        for name in self.playlistentry_set.all().values_list("playlist__name", flat=True):
+            result.add(name)
+        for name in self.playlist_set.values_list("name", flat=True):
+            result.add(name)
+        return list(result)
+
+    playlist_names.short_description = "Playlists"

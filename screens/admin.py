@@ -30,7 +30,8 @@ class ScheduleDisplay(admin.ModelAdmin):
 
 
 class SourceDisplay(admin.ModelAdmin):
-    readonly_fields = ('image_preview',)
+    readonly_fields = ('image_preview', 'playlist_names')
+    list_display = ('name', 'playlist_names')
     class Media:
         js = (
             "admin/js/jquery.init.js",
