@@ -16,7 +16,7 @@ class Schedule(models.Model):
         tomorrow = timezone.now() + timedelta(days=1)
         playlist = self.default_playlist
         priority = 999999
-        for rule in self.schedulerule_set.filter(starts__lt=timezone.now()).all():
+        for rule in self.schedulerule_set.filter(starts__lte=timezone.now()).all():
             if rule.priority > priority:
                 continue
             if any(rule.occurrences.between(yesterday, tomorrow, dtstart=yesterday)):

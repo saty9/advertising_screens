@@ -39,7 +39,7 @@ class ScheduleTests(TestCase):
         self.schedule.schedulerule_set.create(
             playlist=self.list_a,
             priority=1,
-            starts=timezone.now() - timedelta(days=1),
+            starts=timezone.now(),
             start_time=timezone.now() - timedelta(minutes=1),
             end_time=timezone.now() + timedelta(minutes=1),
             occurrences=self.make_current_daily_reccurence()
