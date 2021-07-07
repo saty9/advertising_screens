@@ -57,7 +57,7 @@ class Source(models.Model):
         return self.file.url
 
     def image_preview(self):
-        return get_template("screens/display_source.html").render({"source": {"source": self}})
+        return get_template("screens/source_preview.html").render({"source": {"source": self}})
 
     image_preview.short_description = 'Preview'
 
