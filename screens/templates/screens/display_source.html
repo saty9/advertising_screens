@@ -5,8 +5,7 @@
          {% endif %}
     >
 {% elif source.source.type == "VID" %}
-    <video class="advert video">
-        <source src="{{ source.source.file.url }}" type="video/mp4">
+    <video class="advert video" src="{{ source.source.file.url }}" preload="none">
     </video>
 {% elif source.source.type == "FRM" %}
     <iframe src="{{ source.source.url }}" class="advert image"

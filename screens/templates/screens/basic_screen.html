@@ -93,6 +93,12 @@
                 x[i].play();
                 x[i].onended = function () {
                     x[i].style.opacity = 0;
+
+                    //unload and reload source to free hardware decoder context
+                    var tmp_src = x[i].src;
+                    x[i].src=("");
+                    x[i].src = tmp_src;
+
                     if (x.length == 1){
                       x[i].currentTime = 0;
                     } else {
