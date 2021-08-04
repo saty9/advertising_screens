@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='screen',
             name='last_seen',
-            field=models.TimeField(auto_now=True),
+            field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
             model_name='screen',

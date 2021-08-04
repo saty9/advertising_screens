@@ -14,9 +14,4 @@ class Migration(migrations.Migration):
             model_name='screen',
             name='online',
         ),
-        migrations.AlterField(
-            model_name='screen',
-            name='last_seen',
-            field=models.DateTimeField(),
-        ),
     ]
