@@ -12,7 +12,7 @@ class PlaylistEntryInline(OrderableAdmin, admin.TabularInline):
 
 class PlaylistDisplay(admin.ModelAdmin):
     fieldsets = [
-        (None,               {'fields': ['name', 'description', 'interspersed_source', 'plays_everything']}),
+        (None,               {'fields': ['name', 'description', 'interspersed_source', 'plays_everything', "parents"]}),
     ]
     inlines = [PlaylistEntryInline]
 
