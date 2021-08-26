@@ -17,6 +17,7 @@ class Playlist(models.Model):
     interspersed_source = models.ForeignKey(Source, null=True, default=None, on_delete=models.SET_NULL, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
     parents = models.ManyToManyField("self", related_name="children", symmetrical=False,
+                                     through="PlaylistRelation", through_fields=("inheriting_list", "super_list"),
                                      help_text="All sources that would be played by these playlists will be included in this one too.", blank=True)
 
     def parent_sources(self, block_list):

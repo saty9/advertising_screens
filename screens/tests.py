@@ -1,10 +1,11 @@
 from datetime import timedelta
 
 import recurrence
+from django.db.models import ProtectedError
 from django.test import TestCase
 from django.utils import timezone
 
-from screens.models import Schedule, Playlist, PlaylistEntry, Source
+from screens.models import Schedule, Playlist, PlaylistEntry, Source, PlaylistRelation
 
 
 class ScheduleTests(TestCase):
@@ -121,4 +122,10 @@ class PlaylistTests(TestCase):
         self.list_a.parents.add(self.list_b)
         self.list_b.parents.add(self.list_a)
         self.assertListEqual(sources(self.list_a.get_sources()), [self.entry_a, self.entry_b])
+
+    def test_deleting_a_parent_is_blocked(self):
+        self.list_a.parents.add(self.list_b)
+        self.assertRaises(ProtectedError, self.list_b.delete)
+        self.list_a.delete()
+
 
