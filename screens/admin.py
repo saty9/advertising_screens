@@ -10,11 +10,19 @@ class PlaylistEntryInline(OrderableAdmin, admin.TabularInline):
     ordering_field = 'number'
 
 
+class PlaylistParentsInline(admin.TabularInline):
+    model = Playlist.parents.through
+    fk_name = "inheriting_list"
+    verbose_name_plural = "Playlists to inherit from"
+    verbose_name = "Parent List"
+    extra = 1
+
+
 class PlaylistDisplay(admin.ModelAdmin):
     fieldsets = [
-        (None,               {'fields': ['name', 'description', 'interspersed_source', 'plays_everything', "parents"]}),
+        (None,               {'fields': ['name', 'description', 'interspersed_source', 'plays_everything']}),
     ]
-    inlines = [PlaylistEntryInline]
+    inlines = [PlaylistParentsInline, PlaylistEntryInline]
 
 
 class ScheduleRuleInline(admin.StackedInline):
