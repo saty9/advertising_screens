@@ -46,6 +46,17 @@ class ScheduleTests(TestCase):
         )
         self.assertEqual(self.schedule.get_playlist(), self.list_a)
 
+    def test_get_single_rule_wrong_times(self):
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=timezone.now(),
+            start_time=timezone.now() + timedelta(minutes=1),
+            end_time=timezone.now() - timedelta(minutes=1),
+            occurrences=self.make_current_daily_reccurence()
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.default_list)
+
     def test_get_expired_rule(self):
         self.schedule.schedulerule_set.create(
             playlist=self.list_a,
