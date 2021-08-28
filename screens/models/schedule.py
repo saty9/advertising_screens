@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 from datetime import timedelta
 
@@ -17,10 +18,21 @@ class Schedule(models.Model):
         playlist = self.default_playlist
         priority = 999999
         now = timezone.now()
-        for rule in self.schedulerule_set.filter(starts__lte=now, start_time__lte=now.time(), end_time__gte=now.time()).all():
+        # rules for today
+        non_wrapping_current_rules = self.schedulerule_set.filter(starts__lte=now, start_time__lte=now.time(), end_time__gte=now.time())
+        wrapping_rules_after_start = self.schedulerule_set.filter(starts__lte=now, start_time__lte=now.time(), end_time__lt=F("start_time"))
+        for rule in (non_wrapping_current_rules | wrapping_rules_after_start).all():
             if rule.priority > priority:
                 continue
             if any(rule.occurrences.between(yesterday, tomorrow, dtstart=yesterday)):
+                playlist = rule.playlist
+                priority = rule.priority
+
+        wrapping_rules_before_end = self.schedulerule_set.filter(starts__lte=yesterday, end_time__gte=now.time(), end_time__lt=F("start_time"))
+        for rule in wrapping_rules_before_end.all():
+            if rule.priority > priority:
+                continue
+            if any(rule.occurrences.between(yesterday-timedelta(days=1), tomorrow-timedelta(days=1), dtstart=yesterday-timedelta(days=1))):
                 playlist = rule.playlist
                 priority = rule.priority
 
