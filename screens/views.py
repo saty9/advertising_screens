@@ -6,7 +6,9 @@ import socket
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    ip = request.META.get('REMOTE_ADDR')
+    ip = request.META.get('REMOTE_ADDR', x_forwarded_for)
+    if not ip:
+        ip = "0.0.0.0"
     return ip
 
 
