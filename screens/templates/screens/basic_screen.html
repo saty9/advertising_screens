@@ -8,6 +8,11 @@
     <title>Screens</title>
     <script src="{% static 'admin/js/vendor/jquery/jquery.min.js' %} " type="text/javascript" charset="utf-8"></script>
     <script src="{% static 'admin/js/jquery.init.js' %} " type="text/javascript" charset="utf-8"></script>
+    <script
+            src="https://browser.sentry-cdn.com/6.11.0/bundle.min.js"
+            integrity="sha384-c+8PXtRnYfCKsSEvgtDqFeJvhjltkNLIUB1vcWKW4EleABoS4jh87UrE+1nQXg+g"
+            crossorigin="anonymous"
+    ></script>
     <style>
         * {
             padding: 0;
@@ -67,6 +72,16 @@
     {% endif %}
 {% endfor %}
 <script>
+    Sentry.init({
+        dsn: "https://02ff73bb5b154cacb433522443012f64@o189482.ingest.sentry.io/5935694",
+        // this assumes your build process sets "npm_package_version" in the env
+        release: "my-project-name@075775420668bd70b0c2a93344dd3e69f918239e",
+        integrations: [],
+
+        // We recommend adjusting this value in production, or using tracesSampler
+        // for finer control
+        tracesSampleRate: 1.0,
+    });
     //Marketing Screen Slideshow
     // Original JS CSS and HTML Made by Thew & Charlie 2018
     var displaytime = 10000;
@@ -76,21 +91,27 @@
     var playlist_last_updated = "{{ playlist_last_updated }}";
 
     window.onload = function () {
-        screentest();
-        window.setInterval(check_for_changes, 1000 * 60);
+        console.log("window loaded");
         for(let j = 0; j < x.length; j++) {
-          if (django.jQuery(x[j]).hasClass('video') === true) {
+          if (x[j].classList.contains('video') === true) {
+              console.log("initial time set")
             x[j].currentTime = 0;
           }
         }
+        screentest();
+        window.setInterval(check_for_changes, 1000 * 60);
     };
 
     function screentest() {
+        console.log("screentest")
         i = i % x.length;
-        if (django.jQuery(x[i]).hasClass('video') === true) {
+        if (x[i].classList.contains('video') === true) {
             if (x[i].readyState >= 0) {
                 x[i].style.opacity = 1;
-                x[i].play();
+                x[i].play().catch((e) => {
+                    console.error(e);
+                    throw e;
+                });
                 x[i].onended = function () {
                     x[i].style.opacity = 0;
 
@@ -116,7 +137,7 @@
                 i += 1;
                 window.setTimeout(screentest, 500)
             }
-        } else if (django.jQuery(x[i]).hasClass('image') === true) {
+        } else if (x[i].classList.contains('image') === true) {
             x[i].style.opacity = 1;
             let duration = x[i].dataset.duration ? parseInt(x[i].dataset.duration * 1000) : displaytime;
             window.setTimeout(screentest, duration + 1);
