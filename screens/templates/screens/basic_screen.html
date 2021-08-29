@@ -110,7 +110,7 @@
         if (x[i].classList.contains('video') === true) {
             if (x[i].readyState >= 0) {
                 x[i].style.opacity = 1;
-                x[i].play().catch((e) => {
+                const playPromise = x[i].play().then(() => {console.log("playing")}).catch((e) => {
                     console.error(e);
                     throw e;
                 });
@@ -135,6 +135,13 @@
                     i = i + 1;
                     screentest();
                 };
+                const timeout = new Promise(resolve => setTimeout(() => {resolve("timeout")}, 10000))
+                Promise.race([playPromise, timeout]).then(result => {
+                    if (result !== "timeout")
+                        return;
+                    console.warn("video playback start stalled")
+                    x[i].onended()
+                })
             } else {
                 i += 1;
                 window.setTimeout(screentest, 500)
