@@ -72,6 +72,7 @@
     {% endif %}
 {% endfor %}
 <script>
+    {% if not debug %}
     Sentry.init({
         dsn: "https://02ff73bb5b154cacb433522443012f64@o189482.ingest.sentry.io/5935694",
         // this assumes your build process sets "npm_package_version" in the env
@@ -82,6 +83,7 @@
         // for finer control
         tracesSampleRate: 1.0,
     });
+    {% endif %}
     //Marketing Screen Slideshow
     // Original JS CSS and HTML Made by Thew & Charlie 2018
     var displaytime = 10000;
