@@ -29,9 +29,24 @@ class ScheduleDisplay(admin.ModelAdmin):
     inlines = [ScheduleRuleInline]
 
 
+class PlaylistListFilter(admin.SimpleListFilter):
+    title = "In Playlist"
+    parameter_name = "playlist"
+
+    def lookups(self, request, model_admin):
+        return Playlist.objects.values_list("id", "name")
+
+    def queryset(self, request, queryset):
+        return queryset.filter(playlist__id=self.value()) or queryset.filter(playlistentry__playlist__id=self.value())
+
+
 class SourceDisplay(admin.ModelAdmin):
     readonly_fields = ('image_preview', 'playlist_names')
-    list_display = ('name', 'playlist_names', 'created_at')
+    list_display = ('name', 'playlist_names', 'created_at', "exclude_from_play_all")
+    list_filter = (
+        "exclude_from_play_all",
+        PlaylistListFilter
+    )
     class Media:
         js = (
             "admin/js/jquery.init.js",
