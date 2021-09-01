@@ -44,6 +44,8 @@ class Source(models.Model):
         return self.name
 
     def clean(self):
+        if hasattr(self, "bulk_create") and self.bulk_create:
+            return
         if self.type in [self.IMAGE, self.VIDEO] and self.file.name is None:
             raise ValidationError({'file': "File cannot be blank for image or video type sources"})
         if self.type == self.VIDEO and self.file.name[-4:] != ".mp4":
@@ -68,3 +70,6 @@ class Source(models.Model):
         return list(result)
 
     playlist_names.short_description = "Playlists"
+
+    def full_clean(self, exclude=None, validate_unique=True):
+        return super().full_clean(exclude, validate_unique)
