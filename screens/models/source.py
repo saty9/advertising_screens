@@ -34,6 +34,11 @@ class Source(models.Model):
     expires_at = models.DateTimeField(blank=True, null=True, default=None)
     valid_from = models.DateTimeField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
+    playlists = models.ManyToManyField("Playlist", related_name="sources", symmetrical=False,
+                                       through="PlaylistEntry", through_fields=("source", "playlist"),
+                                       help_text="All sources that would be played by these playlists will be included in this one too.",
+                                       blank=True)
+
 
     def __str__(self):
         return self.name
