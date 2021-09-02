@@ -31,6 +31,7 @@ urlpatterns = [
     path('api/screen/', screenviews.view_screen_automatic_json),
     path('api/screen/<int:screen_id>', screenviews.view_screen_json, name="screens/screen_view_json"),
     path('api/playlist/<int:playlist_id>', screenviews.view_playlist_json, name="screens/playlist_view_json"),
+    path('api/playlist_tree', screenviews.view_playlist_tree_json, name="screens/playlist_tree_json"),
     path('meta', screenviews.get_meta, name="screen-meta-view"),
     path('api/meta', screenviews.get_meta, name="screen-meta-view"),
     path('event_schedules/', include(room_schedules_urls)),
