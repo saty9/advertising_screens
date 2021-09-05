@@ -34,11 +34,18 @@ class Source(models.Model):
     expires_at = models.DateTimeField(blank=True, null=True, default=None)
     valid_from = models.DateTimeField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
+    playlists = models.ManyToManyField("Playlist", related_name="sources", symmetrical=False,
+                                       through="PlaylistEntry", through_fields=("source", "playlist"),
+                                       help_text="All sources that would be played by these playlists will be included in this one too.",
+                                       blank=True)
+
 
     def __str__(self):
         return self.name
 
     def clean(self):
+        if hasattr(self, "bulk_create") and self.bulk_create:
+            return
         if self.type in [self.IMAGE, self.VIDEO] and self.file.name is None:
             raise ValidationError({'file': "File cannot be blank for image or video type sources"})
         if self.type == self.VIDEO and self.file.name[-4:] != ".mp4":
@@ -63,3 +70,6 @@ class Source(models.Model):
         return list(result)
 
     playlist_names.short_description = "Playlists"
+
+    def full_clean(self, exclude=None, validate_unique=True):
+        return super().full_clean(exclude, validate_unique)

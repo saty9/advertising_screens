@@ -1,7 +1,8 @@
 from admin_ordering.admin import OrderableAdmin
+from django.conf.urls import url
 from django.contrib import admin
 
-# Register your models here.
+from screens.forms import SourceBulkCreateForm, PlaylistAssigningSourceForm
 from screens.models import Playlist, Schedule, ScheduleRule, Screen, Source, PlaylistEntry
 
 
@@ -10,11 +11,19 @@ class PlaylistEntryInline(OrderableAdmin, admin.TabularInline):
     ordering_field = 'number'
 
 
+class PlaylistParentsInline(admin.TabularInline):
+    model = Playlist.parents.through
+    fk_name = "inheriting_list"
+    verbose_name_plural = "Playlists to inherit from"
+    verbose_name = "Parent List"
+    extra = 1
+
+
 class PlaylistDisplay(admin.ModelAdmin):
     fieldsets = [
         (None,               {'fields': ['name', 'description', 'interspersed_source', 'plays_everything']}),
     ]
-    inlines = [PlaylistEntryInline]
+    inlines = [PlaylistParentsInline, PlaylistEntryInline]
 
 
 class ScheduleRuleInline(admin.StackedInline):
@@ -41,22 +50,45 @@ class PlaylistListFilter(admin.SimpleListFilter):
 
 
 class SourceDisplay(admin.ModelAdmin):
-    readonly_fields = ('image_preview', 'playlist_names')
+    readonly_fields = ('image_preview',)
     list_display = ('name', 'playlist_names', 'created_at', "exclude_from_play_all")
     list_filter = (
         "exclude_from_play_all",
         PlaylistListFilter
     )
+
+    def get_urls(self):
+        urls = super(SourceDisplay, self).get_urls()
+        my_urls = [
+            url(r'^bulk_create/$', self.bulk_create_view),
+        ]
+        return my_urls + urls
+
+    def bulk_create_view(self, request):
+        request.bulk_create = True
+        return super(SourceDisplay, self).changeform_view(request)
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None and hasattr(request, "bulk_create") and request.bulk_create:  # TODO and bulk create permission
+            kwargs['form'] = SourceBulkCreateForm
+            self.exclude = ("file", "name")
+        else:
+            kwargs["form"] = PlaylistAssigningSourceForm
+            self.exclude = ()
+        return super().get_form(request, obj, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        form.save(commit=True)
+
     class Media:
         js = (
             "admin/js/jquery.init.js",
             'screens/js/source_form.js',
         )
 
+
 class ScreenAdmin(admin.ModelAdmin):
     list_display = ('name', 'ip', 'online', 'last_seen')
-    
-    
 
 
 admin.site.register(Playlist, PlaylistDisplay)

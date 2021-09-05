@@ -104,6 +104,18 @@ def render_playlist_json(playlist, screen_interspersed=None):
     }
 
 
+def view_playlist_tree_json(request):
+    parent_child_pairs = models.Playlist.objects.prefetch_related("children").values_list("id", "name", "children_list__inheriting_list_id")
+    out = {}
+    for parent, parent_name, child in parent_child_pairs:
+        if parent not in out:
+            out[parent] = {"name": parent_name, "children": []}
+        if child:
+            out[parent]["children"].append(child)
+
+    return JsonResponse(out)
+
+
 def get_meta(request):
     screen = get_screen(request)
     playlist = screen.schedule.get_playlist()
