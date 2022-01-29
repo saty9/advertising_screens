@@ -80,7 +80,7 @@ def view_screen_json(request, screen_id):
         return JsonResponse({"error": "screen doesnt exist"}, status=404)
 
 
-def view_playlist_json(playlist_id):
+def view_playlist_json(request, playlist_id):
     try:
         current_playlist = models.Playlist.objects.get(id=playlist_id)
         return JsonResponse(render_playlist_json(current_playlist))
