@@ -1,5 +1,5 @@
 from admin_ordering.admin import OrderableAdmin
-from django.conf.urls import url
+from django.urls import re_path
 from django.contrib import admin
 
 from screens.forms import SourceBulkCreateForm, PlaylistAssigningSourceForm
@@ -60,7 +60,7 @@ class SourceDisplay(admin.ModelAdmin):
     def get_urls(self):
         urls = super(SourceDisplay, self).get_urls()
         my_urls = [
-            url(r'^bulk_create/$', self.bulk_create_view),
+            re_path(r'^bulk_create/$', self.bulk_create_view),
         ]
         return my_urls + urls
 

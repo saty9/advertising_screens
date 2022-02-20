@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'screens',
     'room_schedules',
-    'django_cron',
     'recurrence',
     'admin_ordering',
     'django_cleanup.apps.CleanupConfig',  # TODO will need to detect image load failure and reload page if it occurs
@@ -134,11 +133,5 @@ MEDIA_ROOT = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'me
 MEDIA_URL = '/media/'
 FILE_UPLOAD_PERMISSIONS = 0o644
 
-CRON_CLASSES = [
-    "screens.cron.CleanUpSchedule",
-    "screens.cron.CleanUpSources",
-    "room_schedules.cron.BuildSchedule",
-    "room_schedules.cron.CleanUpSchedule",
-]
 
 ARTIFAX_API_KEY = "OVERRIDE THIS IN settings.py"
