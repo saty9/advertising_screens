@@ -5,7 +5,7 @@ from django.forms import ModelForm, FileInput, FileField
 
 
 class PlaylistAssigningSourceForm(ModelForm):
-    playlists = forms.ModelMultipleChoiceField(label="Playlists", queryset=Playlist.objects.all(), widget=forms.CheckboxSelectMultiple)
+    playlists = forms.ModelMultipleChoiceField(label="Playlists", queryset=Playlist.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
 
     def save(self, commit=True):
         if self.errors:
