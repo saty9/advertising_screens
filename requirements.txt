@@ -1,5 +1,5 @@
-Django
-django-recurrence
-django-cleanup
-httplib2
-django-admin-ordering
+Django==4.0.2
+django-recurrence==1.11.1
+django-cleanup==6.0.0
+httplib2==0.20.4
+django-admin-ordering==0.14.2
