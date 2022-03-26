@@ -25,7 +25,8 @@ class Screen(models.Model):
     online.boolean = True
 
     def screen_preview(self):
-        return get_template("screens/screen_preview.html").render({"screen_url": self.get_absolute_url()})
+        if self.id:
+            return get_template("screens/screen_preview.html").render({"screen_url": self.get_absolute_url()})
 
     screen_preview.short_description = 'Preview'
         
