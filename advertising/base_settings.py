@@ -54,6 +54,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+X_FRAME_OPTIONS ="SAMEORIGIN"
+
 ROOT_URLCONF = 'advertising.urls'
 
 TEMPLATES = [

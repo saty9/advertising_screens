@@ -1,4 +1,5 @@
 from django.db import models
+from django.template.loader import get_template
 from django.urls import reverse
 from datetime import datetime, timedelta
 from django.db.models import Q
@@ -22,6 +23,11 @@ class Screen(models.Model):
     def online(self):
         return self.last_seen and self.last_seen >= datetime.now()-timedelta(minutes=1)
     online.boolean = True
+
+    def screen_preview(self):
+        return get_template("screens/screen_preview.html").render({"screen_url": self.get_absolute_url()})
+
+    screen_preview.short_description = 'Preview'
         
 
     def __str__(self):
