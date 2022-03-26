@@ -18,9 +18,9 @@ def get_client_hostname(ip):
 
 
 def get_screen(request):
-    ip = get_client_ip(request)
-    (screen, _) = models.Screen.objects.get_or_create(ip=ip,
-                                                      defaults={'name': get_client_hostname(ip),
+    ip = "255.255.255.255"
+    (screen, _) = models.Screen.objects.get_or_create(ip=ip, name="DEFAULT",
+                                                      defaults={'name': "DEFAULT",
                                                                 'schedule': models.Schedule.get_default()})
     return screen
 
