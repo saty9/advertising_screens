@@ -1,11 +1,10 @@
-import os
 import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.dispatch import receiver
 from django.template.loader import get_template
-from django.utils import timezone
-from django.utils.html import escape, format_html
+from django.db.models.signals import pre_save
 
 
 def get_file_path(instance, filename):
@@ -73,3 +72,29 @@ class Source(models.Model):
 
     def full_clean(self, exclude=None, validate_unique=True):
         return super().full_clean(exclude, validate_unique)
+
+    def meta_times_touch(self):
+        for playlist in self.playlists.all():
+            playlist.meta_times_touch()
+
+
+@receiver(pre_save, sender=Source)
+def source_updated(sender, instance=None, raw=False, **kwargs):
+    if instance is None:
+        return
+    if raw:
+        raise Exception("was raw")
+
+    try:
+        orig = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+
+    # TODO fix files always being unequal
+    if orig.file != instance.file or\
+            orig.type != instance.type or\
+            orig.url != instance.url or\
+            orig.expires_at != instance.expires_at or\
+            orig.valid_from != instance.valid_from:
+        #TODO handle expires at and valid from properly somehow
+        instance.meta_times_touch()
