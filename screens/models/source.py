@@ -80,10 +80,8 @@ class Source(models.Model):
 
 @receiver(pre_save, sender=Source)
 def source_updated(sender, instance=None, raw=False, **kwargs):
-    if instance is None:
+    if instance is None or raw:
         return
-    if raw:
-        raise Exception("was raw")
 
     try:
         orig = sender.objects.get(pk=instance.pk)

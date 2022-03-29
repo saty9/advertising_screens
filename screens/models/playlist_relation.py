@@ -15,9 +15,7 @@ class PlaylistRelation(models.Model):
 
 @receiver(pre_save, sender=PlaylistRelation)
 def source_updated(sender, instance=None, raw=False, **kwargs):
-    if instance is None:
+    if instance is None or raw:
         return
-    if raw:
-        raise Exception("was raw")
 
     instance.inheriting_list.meta_times_touch()
