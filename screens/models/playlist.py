@@ -42,13 +42,15 @@ class Playlist(models.Model):
                         .filter(Q(source__valid_from__lte=now) | Q(source__valid_from__isnull=True)) \
                         .filter(Q(source__expires_at__gte=now) | Q(source__expires_at__isnull=True)) \
                         .order_by('number')) + self.parent_sources(block_list)
-            #return Source.objects\
-            #    .filter(playlistentry__playlist=self)\
-            #    .exclude(pk=self.interspersed_source_id)\
-            #    .filter(Q(valid_from__lte=now) | Q(valid_from__isnull=True))\
-            #    .filter(Q(expires_at__gte=now) | Q(expires_at__isnull=True))\
-            #    .order_by('playlistentry__number')\
-            #    .select_related()
+
+    def meta_times_touch(self, block_list=None):
+        if block_list is None:
+            block_list = []
+        block_list.append(self.id)
+        self.last_updated = datetime.now()
+        self.save()
+        for child in self.children.exclude(id__in=block_list):
+            child.meta_times_touch(block_list)
 
     def __str__(self):
         return self.name

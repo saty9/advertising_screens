@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 from screens.models import Playlist
 
@@ -9,3 +11,13 @@ class PlaylistRelation(models.Model):
 
     def __str__(self):
         return f"{self.inheriting_list} inherits from {self.super_list}"
+
+
+@receiver(pre_save, sender=PlaylistRelation)
+def source_updated(sender, instance=None, raw=False, **kwargs):
+    if instance is None:
+        return
+    if raw:
+        raise Exception("was raw")
+
+    instance.inheriting_list.meta_times_touch()
