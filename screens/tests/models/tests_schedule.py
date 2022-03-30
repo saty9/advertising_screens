@@ -1,5 +1,5 @@
 from datetime import timedelta
-from unittest import TestCase
+from django.test import TestCase
 
 import recurrence
 from django.utils import timezone

@@ -1,10 +1,11 @@
 import uuid
+import hashlib
 
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.dispatch import receiver
 from django.template.loader import get_template
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 
 
 def get_file_path(instance, filename):
@@ -77,22 +78,48 @@ class Source(models.Model):
         for playlist in self.playlists.all():
             playlist.meta_times_touch()
 
-
 @receiver(pre_save, sender=Source)
-def source_updated(sender, instance=None, raw=False, **kwargs):
+def set_orig_file_hash(sender, instance=None, raw=False, **kwargs):
+    instance._orig = None
     if instance is None or raw:
         return
 
+    instance._orig_file_hash = None
     try:
         orig = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
         return
 
-    # TODO fix files always being unequal
-    if orig.file != instance.file or\
-            orig.type != instance.type or\
-            orig.url != instance.url or\
-            orig.expires_at != instance.expires_at or\
-            orig.valid_from != instance.valid_from:
+    instance._orig = orig
+    if orig.file:
+        orig_hash = hashlib.sha1()
+        with orig.file.open("rb") as f:
+            orig_hash.update(f.read(20_000_000))
+        instance._orig_file_hash = orig_hash.digest()
+
+@receiver(post_save, sender=Source)
+def source_updated(sender, instance=None, raw=False, **kwargs):
+    if instance is None or raw:
+        return
+
+    if instance._orig is None:
+        return
+
+    def file_changed():
+        if bool(instance._orig.file) != bool(instance.file):
+            return True
+        if not instance.file:
+            return False
+
+        instance_hash = hashlib.sha1()
+        with instance.file.open("rb") as f:
+            instance_hash.update(f.read(20_000_000))
+        return instance._orig_file_hash != instance_hash.digest()
+
+    if instance._orig.type != instance.type or\
+            instance._orig.url != instance.url or\
+            instance._orig.expires_at != instance.expires_at or\
+            instance._orig.valid_from != instance.valid_from or\
+            file_changed():
         #TODO handle expires at and valid from properly somehow
         instance.meta_times_touch()

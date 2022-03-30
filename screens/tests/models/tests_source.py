@@ -1,5 +1,5 @@
 import datetime
-from unittest import TestCase
+from django.test import TestCase
 
 import time_machine
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,7 +14,7 @@ class SourceTests(TestCase):
         self.base_time = datetime.datetime.fromisoformat("2022-03-27T20:59:34.000+00:00")
         time_machine.travel(self.base_time, tick=False).start()
         self.playlist = Playlist.objects.create(name="listA")
-        self.source = Source.objects.create()
+        self.source = Source.objects.create(file=SimpleUploadedFile("test_file_original.png", b"an_image"))
         self.pl_entry = PlaylistEntry.objects.create(playlist=self.playlist, number=1, source=self.source)
 
     @time_machine.travel(update_time, tick=False)
