@@ -40,7 +40,8 @@ def view_screen(request, screen_id):
                 'interspersed': models.PlaylistEntry(source=current_playlist.interspersed_source),
                 'screen_interspersed': models.PlaylistEntry(source=screen.interspersed_source),
                 "current_playlist": current_playlist.pk,
-                "playlist_last_updated": current_playlist.last_updated.isoformat()
+                "playlist_last_updated": current_playlist.last_updated.isoformat(),
+                "screen_id": screen_id,
             }
             return render(request, 'screens/basic_screen.html', view_dict)
         else:
@@ -116,11 +117,20 @@ def view_playlist_tree_json(request):
     return JsonResponse(out)
 
 
-def get_meta(request):
-    screen = get_screen(request)
+def _get_meta(request, screen):
     playlist = screen.schedule.get_playlist()
     screen.last_seen = datetime.now()
     screen.save()
     out = {"current_playlist": playlist.pk,
            "playlist_last_updated": playlist.last_updated.isoformat()}
     return JsonResponse(out)
+
+
+def get_meta(request):
+    screen = get_screen(request)
+    return _get_meta(request, screen)
+
+
+def get_meta_screen(request, screen_id):
+    screen = models.Screen.objects.get(id=screen_id)
+    return _get_meta(request, screen)
