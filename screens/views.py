@@ -74,7 +74,7 @@ def view_screen_json(request, screen_id):
         screen = models.Screen.objects.get(id=screen_id)
         if screen.schedule:
             current_playlist = screen.schedule.get_playlist()
-            return JsonResponse(render_playlist_json(current_playlist, screen_interspersed=screen.interspersed_source))
+            return JsonResponse(render_playlist_json(current_playlist, screen_interspersed=screen.interspersed_source, screen_id=screen_id))
         else:
             return JsonResponse({"error": "no playlist assigned to this screen"}, status=404)
     except models.Screen.DoesNotExist:
@@ -89,7 +89,7 @@ def view_playlist_json(request, playlist_id):
         return JsonResponse({"error": "playlist doesnt exist"}, status=404)
 
 
-def render_playlist_json(playlist, screen_interspersed=None):
+def render_playlist_json(playlist, screen_interspersed=None, screen_id=None):
     interspersed = []
     if playlist.interspersed_source:
         interspersed.append({"src": playlist.interspersed_source.src(), "type": playlist.interspersed_source.type})
@@ -101,7 +101,8 @@ def render_playlist_json(playlist, screen_interspersed=None):
         'playlist': list(map(lambda x: {"src": x.source.src(), "type": x.source.type, "duration": x.duration}, playlist.get_sources())),
         'interspersed': interspersed,
         "current_playlist": playlist.pk,
-        "playlist_last_updated": playlist.last_updated.isoformat()
+        "playlist_last_updated": playlist.last_updated.isoformat(),
+        "screen_id": screen_id
     }
 
 
