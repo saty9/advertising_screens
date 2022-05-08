@@ -88,7 +88,7 @@ class SourceDisplay(admin.ModelAdmin):
 
 
 class ScreenAdmin(admin.ModelAdmin):
-    readonly_fields = ('screen_preview',)
+#    readonly_fields = ('screen_preview',)
     list_display = ('name', 'ip', 'online', 'last_seen')
 
 
