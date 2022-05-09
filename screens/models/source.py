@@ -28,7 +28,7 @@ class Source(models.Model):
     file = models.FileField(upload_to=get_file_path,
                             null=True,
                             blank=True,
-                            help_text="resolution of files should be 1360x768, videos must be mp4")
+                            help_text="resolution of files should be 1920x1080, videos must be mp4")
     url = models.URLField(blank=True, verbose_name="Website Address", help_text="only required if website type")
     exclude_from_play_all = models.BooleanField(default=False)
     expires_at = models.DateTimeField(blank=True, null=True, default=None)
