@@ -51,10 +51,9 @@ class PlaylistListFilter(admin.SimpleListFilter):
 
 class SourceDisplay(admin.ModelAdmin):
     readonly_fields = ('image_preview',)
-    list_display = ('name', 'playlist_names', 'created_at', "exclude_from_play_all")
+    list_display = ('name', 'playlist_names', 'created_at', "valid_from", "expires_at")
     list_filter = (
-        "exclude_from_play_all",
-        PlaylistListFilter
+        PlaylistListFilter,
     )
 
     def get_urls(self):
