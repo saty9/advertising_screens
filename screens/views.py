@@ -2,6 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from screens import models
 from datetime import datetime
+from advertising.settings import AUTO_MAKE_SCREENS_FOR_NEW_IPS
 import socket
 
 def get_client_ip(request):
@@ -18,10 +19,16 @@ def get_client_hostname(ip):
 
 
 def get_screen(request):
-    ip = "255.255.255.255"
-    (screen, _) = models.Screen.objects.get_or_create(ip=ip, name="DEFAULT",
-                                                      defaults={'name': "DEFAULT",
-                                                                'schedule': models.Schedule.get_default()})
+    if AUTO_MAKE_SCREENS_FOR_NEW_IPS:
+        ip = get_client_ip(request)
+        (screen, _) = models.Screen.objects.get_or_create(ip=ip,
+                                                          defaults={'name': get_client_hostname(ip),
+                                                                    'schedule': models.Schedule.get_default()})
+    else:
+        ip = "255.255.255.255"
+        (screen, _) = models.Screen.objects.get_or_create(ip=ip, name="DEFAULT",
+                                                          defaults={'name': "DEFAULT",
+                                                                    'schedule': models.Schedule.get_default()})
     return screen
 
 
