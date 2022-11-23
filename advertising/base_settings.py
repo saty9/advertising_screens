@@ -39,9 +39,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'screens',
     'room_schedules',
+    'django_cron',
     'recurrence',
     'admin_ordering',
     'django_cleanup.apps.CleanupConfig',  # TODO will need to detect image load failure and reload page if it occurs
+]
+
+CRON_CLASSES = [
+    "screens.cron.CleanUpSources",
+    "room_schedules.cron.BuildSchedule",
+    "room_schedules.cron.CleanUpSchedule",
 ]
 
 MIDDLEWARE = [
