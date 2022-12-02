@@ -93,7 +93,7 @@ def view_screen_json(request, screen_id):
             current_playlist = screen.schedule.get_playlist()
             return JsonResponse(render_playlist_json(current_playlist, screen_interspersed=screen.interspersed_source, screen_id=screen_id))
         else:
-            return JsonResponse({"error": "no playlist assigned to this screen"}, status=404)
+            return JsonResponse({"error": "no schedule assigned to this screen"}, status=404)
     except models.Screen.DoesNotExist:
         return JsonResponse({"error": "screen doesnt exist"}, status=404)
 
@@ -136,6 +136,9 @@ def view_playlist_tree_json(request):
 
 
 def _get_meta(request, screen):
+    if screen.schedule is None:
+        return JsonResponse({"error": "no schedule assigned to this screen"}, status=404)
+
     playlist = screen.schedule.get_playlist()
     screen.last_seen = datetime.now()
     screen.save()
