@@ -1,5 +1,7 @@
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.urls import resolve, Resolver404
+from urllib.parse import urlparse
 from screens import models
 from datetime import datetime
 from advertising.settings import AUTO_MAKE_SCREENS_FOR_NEW_IPS
@@ -19,6 +21,14 @@ def get_client_hostname(ip):
 
 
 def get_screen(request):
+    try:
+        referer_match = resolve(urlparse(request.META.get("HTTP_REFERER", "http://example.com/"))[2])
+    except Resolver404 as e:
+        referer_match = None
+    if referer_match and referer_match.url_name == "screens/screen_view":
+        return get_object_or_404(models.Screen, id=referer_match.kwargs["screen_id"])
+
+    # screen is from the auto url
     if AUTO_MAKE_SCREENS_FOR_NEW_IPS:
         ip = get_client_ip(request)
         (screen, _) = models.Screen.objects.get_or_create(ip=ip,
