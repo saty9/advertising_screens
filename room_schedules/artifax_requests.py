@@ -2,6 +2,8 @@ import httplib2
 import datetime
 import json
 import re
+
+from room_schedules.data_chains import execute_chain, search_chains
 from room_schedules.settings import BASE_ADDRESS, HOUR_BREAK_POINT
 from advertising.settings import ARTIFAX_API_KEY as API_KEY
 
@@ -43,10 +45,8 @@ def get_start_time(event: dict):
     :rtype: datetime.time
     """
     try:
-        custom_forms = event['custom_forms']
-        schedule = filter(lambda x: x['custom_form_name'] == 'Schedule', custom_forms).__next__()
-        time = schedule['custom_form_sections'][0]['custom_form_elements'][0]['custom_form_data_value']
-        out = datetime.datetime.strptime(time + ' ' + event['date'], "%H:%M:%S %Y-%m-%d")
+        result = execute_chain(search_chains["doors_time"], event['custom_forms'])
+        out = datetime.datetime.strptime(result + ' ' + event['date'], "%H:%M:%S %Y-%m-%d")
     except (KeyError, IndexError, StopIteration, ValueError):
         out = datetime.datetime.strptime(event['start_time'][:-1] + ' ' + event['date'], "%H:%M:%S.%f %Y-%m-%d")
     return out
@@ -59,10 +59,8 @@ def get_finish_time(event: dict):
     :rtype: datetime.datetime
     """
     try:
-        custom_forms = event['custom_forms']
-        schedule = filter(lambda x: x['custom_form_name'] == 'Schedule', custom_forms).__next__()
-        time = schedule['custom_form_sections'][0]['custom_form_elements'][1]['custom_form_data_value']
-        out = datetime.datetime.strptime(time + ' ' + event['date'], "%H:%M:%S %Y-%m-%d")
+        result = execute_chain(search_chains["end_time"], event['custom_forms'])
+        out = datetime.datetime.strptime(result + ' ' + event['date'], "%H:%M:%S %Y-%m-%d")
     except (KeyError, IndexError, StopIteration, ValueError):
         out = datetime.datetime.strptime(event['end_time'][:-1] + ' ' + event['date'], "%H:%M:%S.%f %Y-%m-%d")
     if out.time() <= datetime.time(hour=HOUR_BREAK_POINT):
