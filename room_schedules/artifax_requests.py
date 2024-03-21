@@ -46,6 +46,8 @@ def get_start_time(event: dict):
     """
     try:
         result = execute_chain(search_chains["doors_time"], event['custom_forms'])
+        if result is None:
+            raise ValueError
         out = datetime.datetime.strptime(result + ' ' + event['date'], "%H:%M:%S %Y-%m-%d")
     except (KeyError, IndexError, StopIteration, ValueError):
         out = datetime.datetime.strptime(event['start_time'][:-1] + ' ' + event['date'], "%H:%M:%S.%f %Y-%m-%d")
@@ -60,6 +62,8 @@ def get_finish_time(event: dict):
     """
     try:
         result = execute_chain(search_chains["end_time"], event['custom_forms'])
+        if result is None:
+            raise ValueError
         out = datetime.datetime.strptime(result + ' ' + event['date'], "%H:%M:%S %Y-%m-%d")
     except (KeyError, IndexError, StopIteration, ValueError):
         out = datetime.datetime.strptime(event['end_time'][:-1] + ' ' + event['date'], "%H:%M:%S.%f %Y-%m-%d")
@@ -119,8 +123,9 @@ def events_happening_on_day(day: datetime.date, venue_id):
             new_events = []
         else:
             new_events = json.loads(content)
-    except Exception:
+    except Exception as e:
         print("An error occurred while loading events from venue with id: {}".format(venue_id))
+        print(e)
         new_events = []
     events.extend(new_events)
     list(map(lambda x: x.update({'time': get_start_time(x)}), events))  # add event time data
