@@ -137,7 +137,7 @@ def events_happening_on_day(day: datetime.date, venue_id):
     events = list(filter(time_filter, events))  # filter to get events by 'fringe time'
     list(map(lambda x: x.update({'finish_time': get_finish_time(x)}), events))  # add event finish_time data
     list(map(lambda x: x.update({'organiser': get_event_organiser(x)}), events))  # add event organiser
-    list(map(lambda x: x.update({'cancelled': x['status_id'] == 7}), events))  # add cancelled info
+    list(map(lambda x: x.update({'cancelled': x['status_id'] in [7, 14]}), events))  # add cancelled info
 
     return events
 
