@@ -54,6 +54,7 @@ class SourceDisplay(admin.ModelAdmin):
     list_display = ('name', 'playlist_names', 'created_at', "valid_from", "expires_at")
     list_filter = (
         PlaylistListFilter,
+        "type",
     )
 
     def get_urls(self):
