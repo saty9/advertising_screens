@@ -20,7 +20,6 @@ from django.views.generic import RedirectView
 
 from advertising import settings
 from screens import views as screenviews
-from room_schedules import urls as room_schedules_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,5 +34,8 @@ urlpatterns = [
     path('meta', screenviews.get_meta, name="screen-meta-view"),
     path('api/meta', screenviews.get_meta, name="screen-meta-view"),
     path('api/meta/<int:screen_id>', screenviews.get_meta_screen, name="screen-meta-view-specific"),
-    path('event_schedules/', include(room_schedules_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if "room_schedules" in settings.INSTALLED_APPS:
+    from room_schedules import urls as room_schedules_urls
+    urlpatterns.append(path('event_schedules/', include(room_schedules_urls)))
