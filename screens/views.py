@@ -4,11 +4,12 @@ from django.urls import resolve, Resolver404
 from urllib.parse import urlparse
 from screens import models
 from datetime import datetime
-from advertising.settings import AUTO_MAKE_SCREENS_FOR_NEW_IPS
+from advertising.settings import AUTO_MAKE_SCREENS_FOR_NEW_IPS, USE_LAST_FORWARDED_FOR_IP
 import socket
 
 def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if USE_LAST_FORWARDED_FOR_IP:
+        return request.META.get('HTTP_X_FORWARDED_FOR').split(",")[-1].strip()
     ip = request.META.get('REMOTE_ADDR')
     return ip
 
