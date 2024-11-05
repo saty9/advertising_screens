@@ -5,3 +5,5 @@ django-cleanup==6.0.0
 httplib2==0.20.4
 django-admin-ordering==0.14.2
 time-machine==2.6.0
+
+pillow==11.0.0

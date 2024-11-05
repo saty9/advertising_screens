@@ -1,6 +1,10 @@
 import uuid
 import hashlib
 
+from PIL import Image
+
+from advertising.settings import MAX_IMG_WIDTH, MAX_IMG_HEIGHT
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.dispatch import receiver
@@ -49,6 +53,14 @@ class Source(models.Model):
             raise ValidationError({'file': "File cannot be blank for image or video type sources"})
         if self.type == self.VIDEO and self.file.name[-4:] != ".mp4":
             raise ValidationError({'file': "Video files must have .mp4 extensions"})
+        if self.type == self.IMAGE:
+            try:
+                img = Image.open(self.file)
+                if img.width > MAX_IMG_WIDTH or img.height > MAX_IMG_HEIGHT:
+                    raise ValidationError({'file': f"Image resolution must be at most {MAX_IMG_WIDTH}x{MAX_IMG_HEIGHT}"})
+            except Exception as e:
+                raise ValidationError({'file': f"Error opening image file: {e}"})
+
 
     def src(self):
         if self.type in [self.IFRAME]:
