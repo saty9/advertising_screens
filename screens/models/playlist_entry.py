@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 
 from screens.models.source import Source
@@ -19,8 +19,9 @@ class PlaylistEntry(models.Model):
         return ""
 
 
+@receiver(pre_delete, sender=PlaylistEntry)
 @receiver(pre_save, sender=PlaylistEntry)
-def source_updated(sender, instance=None, raw=False, **kwargs):
+def entry_updated(sender, instance=None, raw=False, **kwargs):
     if instance is None or raw:
         return
 
