@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.dispatch import receiver
 from django.template.loader import get_template
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, pre_delete
 
 
 def get_file_path(instance, filename):
@@ -134,3 +134,10 @@ def source_updated(sender, instance=None, raw=False, **kwargs):
             file_changed():
         #TODO handle expires at and valid from properly somehow
         instance.meta_times_touch()
+
+@receiver(pre_delete, sender=Source)
+def source_deleted(sender, instance, **kwargs):
+    if instance is None:
+        return
+
+    instance.meta_times_touch()

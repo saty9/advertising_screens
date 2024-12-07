@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
 CRON_CLASSES = [
     "screens.cron.CleanUpSources",
+    "screens.cron.UpdatePlaylists",
     "room_schedules.cron.BuildSchedule",
     "room_schedules.cron.CleanUpSchedule",
 ]
