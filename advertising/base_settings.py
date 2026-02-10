@@ -39,18 +39,45 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'screens',
     'room_schedules',
-    'django_cron',
+    'django_celery_beat',
+    'django_celery_results',
     'recurrence',
     'admin_ordering',
     'django_cleanup.apps.CleanupConfig',  # TODO will need to detect image load failure and reload page if it occurs
 ]
 
-CRON_CLASSES = [
-    "screens.cron.CleanUpSources",
-    "screens.cron.UpdatePlaylists",
-    "room_schedules.cron.BuildSchedule",
-    "room_schedules.cron.CleanUpSchedule",
-]
+# Celery settings
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/London'
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'cleanup-sources-every-5-minutes': {
+        'task': 'screens.tasks.cleanup_sources',
+        'schedule': 300.0,
+    },
+    'update-playlists-every-5-minutes': {
+        'task': 'screens.tasks.update_playlists',
+        'schedule': 300.0,
+    },
+    'cleanup-schedule-every-5-minutes': {
+        'task': 'screens.tasks.cleanup_schedule',
+        'schedule': 300.0,
+    },
+    'build-schedule-hourly': {
+        'task': 'room_schedules.tasks.build_schedule',
+        'schedule': crontab(minute=1),
+    },
+    'cleanup-schedule-daily': {
+        'task': 'room_schedules.tasks.cleanup_schedule',
+        'schedule': crontab(minute=0, hour=0),
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
