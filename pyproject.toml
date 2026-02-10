@@ -1,0 +1,23 @@
+[project]
+name = "advertising"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django==4.0.2",
+    "django-admin-ordering==0.14.2",
+    "django-cleanup==6.0.0",
+    "django-cron==0.6.0",
+    "django-recurrence==1.11.1",
+    "httplib2==0.20.4",
+    "pillow==11.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "time-machine==2.6.0",
+]
+runtime = [
+    "uwsgi"
+]
