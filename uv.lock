@@ -23,6 +23,7 @@ dev = [
     { name = "time-machine" },
 ]
 runtime = [
+    { name = "mysqlclient" },
     { name = "uwsgi" },
 ]
 
@@ -36,6 +37,7 @@ requires-dist = [
     { name = "django-cleanup", specifier = "==6.0.0" },
     { name = "django-recurrence", specifier = "==1.11.1" },
     { name = "httplib2", specifier = "==0.20.4" },
+    { name = "mysqlclient", marker = "extra == 'runtime'", specifier = "==2.2.0" },
     { name = "pillow", specifier = "==11.0.0" },
     { name = "time-machine", marker = "extra == 'dev'", specifier = "==2.6.0" },
     { name = "uwsgi", marker = "extra == 'runtime'" },
@@ -295,6 +297,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/b6/a5/607e533ed6c83ae1a
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fb/0f/834427d8c03ff1d7e867d3db3d176470c64871753252b21b4f4897d1fa45/kombu-5.6.2-py3-none-any.whl", hash = "sha256:efcfc559da324d41d61ca311b0c64965ea35b4c55cc04ee36e55386145dace93", size = 214219, upload-time = "2025-12-29T20:30:05.74Z" },
 ]
+
+[[package]]
+name = "mysqlclient"
+version = "2.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/de/9c/b176826e8994551ce826404dab97e305a4bb76c8b0a4e016fabda2901c71/mysqlclient-2.2.0.tar.gz", hash = "sha256:04368445f9c487d8abb7a878e3d23e923e6072c04a6c320f9e0dc8a82efba14e", size = 89543, upload-time = "2023-06-22T06:11:53.474Z" }
 
 [[package]]
 name = "packaging"
