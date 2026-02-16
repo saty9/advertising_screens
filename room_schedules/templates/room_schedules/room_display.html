@@ -71,6 +71,7 @@
             transition: background-color 0.6s ease;
         }
         .header.available { background: #2D7F44; }
+        .header.warning  { background: #D16837; }
         .header.in-use    { background: #C40050; }
 
         /* Left column: logo */
@@ -164,7 +165,7 @@
         }
 
         .live-clock {
-            font-size: 48px;
+            font-size: 96px;
             font-weight: 300;
             line-height: 1.2;
             /* opacity: 0.85; */
@@ -311,7 +312,7 @@
 <body>
 
     <!-- ── Header: logo | venue/room/status | clock ── -->
-    <div class="header {% if is_available %}available{% else %}in-use{% endif %}" id="statusBanner">
+    <div class="header {% if is_available %}{% if is_warning %}warning{% else %}available{% endif %}{% else %}in-use{% endif %}" id="statusBanner">
         <div class="header-left">
             <img src="{% static 'room_schedules/logo.png' %}" alt="Edinburgh University Students' Association">
         </div>
@@ -319,7 +320,11 @@
             <div class="venue-name">{{ room.venue.name }}</div>
             <div class="room-name">{{ room.name }}</div>
             {% if is_available %}
-                <div class="status-label">Available</div>
+                {% if is_warning %}
+                    <div class="status-label">Busy Soon</div>
+                {% else %}
+                    <div class="status-label">Available</div>
+                {% endif %}
                 {% if next_event %}
                     <div class="countdown-primary" id="countdownPrimary">
                         Free until {{ next_event.start_time|time:'H:i' }}

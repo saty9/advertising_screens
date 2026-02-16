@@ -10,16 +10,44 @@ from room_schedules.models import Venue, Event, Room
 
 
 def room_led_status(request, venue_id, room_id):
-    """Return 'true' or 'false' as plain text indicating room availability."""
+    """Return 'AVAILABLE', 'WARNING', or 'BUSY' as plain text.
+    - AVAILABLE: room is free and next event is >15 min away
+    - WARNING: room is free but next event is within 15 min
+    - BUSY: room is currently in use
+    """
     room = get_object_or_404(Room, pk=room_id)
     now = datetime.datetime.now()
-    is_available = not Event.objects.filter(
+    
+    # Check if room is currently in use
+    current_event = Event.objects.filter(
         room=room,
         start_time__lte=now,
         end_time__gte=now,
         cancelled=False,
-    ).exists()
-    return HttpResponse('true' if is_available else 'false', content_type='text/plain')
+    ).first()
+    
+    if current_event:
+        response = HttpResponse('BUSY', content_type='text/plain')
+        response["Refresh"] = "60"  # refresh every 60 seconds
+        return response
+    
+    # Room is available — check if next event is within 15 minutes
+    next_event = Event.objects.filter(
+        room=room,
+        start_time__gt=now,
+        cancelled=False,
+    ).order_by('start_time').first()
+    
+    if next_event:
+        time_until_next = (next_event.start_time - now).total_seconds() / 60
+        if time_until_next <= 15:
+            response = HttpResponse('WARNING', content_type='text/plain')
+            response["Refresh"] = "60"  # refresh every 60 seconds
+            return response
+    
+    response = HttpResponse('AVAILABLE', content_type='text/plain')
+    response["Refresh"] = "60"  # refresh every 60 seconds
+    return response
 
 
 def show_venue(request, venue_id):
@@ -71,6 +99,12 @@ def show_room_display(request, venue_id, room_id):
 
     is_available = current_event is None
 
+    # Determine if we're in warning state (available but next event within 15 minutes)
+    is_warning = False
+    if is_available and next_event:
+        time_until_next = (next_event.start_time - now).total_seconds() / 60
+        is_warning = time_until_next <= 15
+
     # Compute the start of the current free period (for progress bar).
     # This is the end time of the most recent event that finished before now.
     free_since = None
@@ -106,6 +140,7 @@ def show_room_display(request, venue_id, room_id):
         'current_event': current_event,
         'next_event': next_event,
         'is_available': is_available,
+        'is_warning': is_warning,
         'now_iso': now.isoformat(),
         'current_event_end_iso': current_event_end_iso,
         'current_event_start_iso': current_event_start_iso,
