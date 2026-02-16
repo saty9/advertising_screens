@@ -1,0 +1,494 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=1280">
+    <meta http-equiv="refresh" content="60">
+    <title>{{ room.name }} – Edinburgh University Students' Association</title>
+    <style>
+        /*
+         * Edinburgh University Students' Association – Brand Palette
+         * Purple:  #592F65 / #B37DB1
+         * Blue:    #404692 / #5B97D2
+         * Teal:    #195F65 / #63B0A9
+         * Red:     #C40050 / #E1A388
+         * Orange:  #D16837 / #EEC216
+         * Green:   #2D7F44 / #ACC540
+         * Grey:    #4C4C4C / #D4D4D4
+         * Font:    Source Sans Pro (local)  |  Line-height: 105%
+         */
+
+        @font-face {
+            font-family: "Source Sans Pro";
+            src: url("{% static 'room_schedules/fonts/SourceSansPro-Light.ttf' %}") format("truetype");
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: "Source Sans Pro";
+            src: url("{% static 'room_schedules/fonts/SourceSansPro-Regular.ttf' %}") format("truetype");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: "Source Sans Pro";
+            src: url("{% static 'room_schedules/fonts/SourceSansPro-SemiBold.ttf' %}") format("truetype");
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: "Source Sans Pro";
+            src: url("{% static 'room_schedules/fonts/SourceSansPro-Bold.ttf' %}") format("truetype");
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Source Sans Pro", "Calibri", sans-serif;
+            width: 1280px;
+            height: 800px;
+            overflow: hidden;
+            color: #fff;
+            line-height: 105%;
+        }
+
+        /* ── Header (3-column: logo | venue/room/status | clock) ── */
+        .header {
+            width: 100%;
+            height: 360px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+            transition: background-color 0.6s ease;
+        }
+        .header.available { background: #2D7F44; }
+        .header.in-use    { background: #C40050; }
+
+        /* Left column: logo */
+        .header-left {
+            position: absolute;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .header-left img {
+            height: 120px;
+            width: auto;
+        }
+
+        /* Centre column: venue, room, status, countdown */
+        .header-centre {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 24px;
+            overflow: hidden;
+        }
+
+        .venue-name {
+            font-size: 36px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .room-name {
+            font-size: 52px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            margin-bottom: 12px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .status-label {
+            font-size: 64px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        .name {
+            font-size: 30px;
+            font-weight: 400;
+            line-height: 1.3;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .organiser {
+            font-size: 30px;
+            font-weight: 400;
+            line-height: 1.3;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .countdown-primary {
+            font-size: 30px;
+            font-weight: 400;
+            line-height: 1.3;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* Right column: clock */
+        .header-right {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .live-clock {
+            font-size: 48px;
+            font-weight: 300;
+            line-height: 1.2;
+            /* opacity: 0.85; */
+        }
+
+        /* ── Progress bar ── */
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: #4C4C4C;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #63B0A9;
+            width: 0%;
+            transition: width 1s linear;
+        }
+        .progress-bar.available-bar { background: #ACC540; }
+        .progress-bar.in-use-bar    { background: #EEC216; }
+
+        /* ── Bottom section (800 - 360 - 12 = 428px) ── */
+        .bottom {
+            width: 100%;
+            height: 428px;
+            background: #592F65;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── Next event panel ── */
+        .next-event-panel {
+            width: 440px;
+            padding: 28px 32px;
+            border-right: 1px solid rgba(255,255,255,0.12);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .next-event-panel .label {
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #B37DB1;
+            margin-bottom: 14px;
+        }
+        .next-event-panel .event-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 105%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .next-event-panel .event-organiser {
+            font-size: 20px;
+            color: #D4D4D4;
+            margin-bottom: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .next-event-panel .event-time {
+            font-size: 24px;
+            font-weight: 600;
+            color: #EEC216;
+        }
+        .next-event-panel .countdown-secondary {
+            font-size: 22px;
+            margin-top: 8px;
+            color: #5B97D2;
+            font-weight: 400;
+        }
+        .next-event-panel .nothing {
+            font-size: 24px;
+            color: #B37DB1;
+        }
+
+        /* ── Schedule list ── */
+        .schedule-list {
+            flex: 1;
+            padding: 24px 32px;
+            overflow: hidden;
+        }
+        .schedule-list .label {
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #B37DB1;
+            margin-bottom: 14px;
+        }
+        .schedule-list .date-line {
+            font-size: 20px;
+            color: #D4D4D4;
+            margin-bottom: 16px;
+        }
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .schedule-item.is-current {
+            background: rgba(255,255,255,0.08);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin: 0 -12px;
+            border-left: 4px solid #EEC216;
+        }
+        .schedule-item .time {
+            font-size: 20px;
+            font-weight: 600;
+            width: 160px;
+            flex-shrink: 0;
+            color: #63B0A9;
+        }
+        .schedule-item .details {
+            flex: 1;
+            overflow: hidden;
+        }
+        .schedule-item .details .name {
+            font-size: 20px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .schedule-item .details .organiser {
+            font-size: 16px;
+            color: #D4D4D4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Header: logo | venue/room/status | clock ── -->
+    <div class="header {% if is_available %}available{% else %}in-use{% endif %}" id="statusBanner">
+        <div class="header-left">
+            <img src="{% static 'room_schedules/logo.png' %}" alt="Edinburgh University Students' Association">
+        </div>
+        <div class="header-centre">
+            <div class="venue-name">{{ room.venue.name }}</div>
+            <div class="room-name">{{ room.name }}</div>
+            {% if is_available %}
+                <div class="status-label">Available</div>
+                {% if next_event %}
+                    <div class="countdown-primary" id="countdownPrimary">
+                        Free until {{ next_event.start_time|time:'H:i' }}
+                    </div>
+                {% else %}
+                    <div class="countdown-primary">Free for the rest of the day</div>
+                {% endif %}
+            {% else %}
+                <div class="status-label">In Use</div>
+                <div class="name">{{ current_event.name }}</div>
+                <div class="organiser">{{ current_event.organiser }}</div>
+                <div class="countdown-primary" id="countdownPrimary">
+                    Until {{ current_event.end_time|time:'H:i' }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="header-right">
+            <div class="live-clock" id="liveClock"></div>
+        </div>
+    </div>
+
+    <!-- ── Progress bar ── -->
+    <div class="progress-container">
+        <div class="progress-bar {% if is_available %}available-bar{% else %}in-use-bar{% endif %}" id="progressBar"></div>
+    </div>
+
+    <!-- ── Bottom section ── -->
+    <div class="bottom">
+
+        <!-- Next event panel -->
+        <div class="next-event-panel">
+            <div class="label">{% if is_available %}Next Booking{% else %}Up Next{% endif %}</div>
+            {% if next_event %}
+                <div class="event-name">{{ next_event.name }}</div>
+                <div class="event-organiser">{{ next_event.organiser }}</div>
+                <div class="event-time">{{ next_event.start_time|time:'H:i' }} – {{ next_event.end_time|time:'H:i' }}</div>
+                <div class="countdown-secondary" id="countdownSecondary">
+                    Starts in …
+                </div>
+            {% else %}
+                <div class="nothing">No more bookings today</div>
+            {% endif %}
+        </div>
+
+        <!-- Today's schedule -->
+        <div class="schedule-list">
+            <div class="label">Today's Schedule</div>
+            <div class="date-line">{{ current_date|date:'l j' }}<sup>{{ current_date|date:'S' }}</sup> {{ current_date|date:'F' }}</div>
+            {% for event in events %}
+                <div class="schedule-item {% if event == current_event %}is-current{% endif %}">
+                    <div class="time">{{ event.start_time|time:'H:i' }} – {{ event.end_time|time:'H:i' }}</div>
+                    <div class="details">
+                        <div class="name">{{ event.name }}</div>
+                        <div class="organiser">{{ event.organiser }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <script>
+        // ── Server-provided timestamps ──
+        const NOW_ISO           = "{{ now_iso }}";
+        const CURRENT_EVT_START = "{{ current_event_start_iso }}";
+        const CURRENT_EVT_END   = "{{ current_event_end_iso }}";
+        const NEXT_EVT_START    = "{{ next_event_start_iso }}";
+        const FREE_SINCE        = "{{ free_since_iso }}";
+        const IS_AVAILABLE      = {{ is_available|yesno:"true,false" }};
+
+        // Calculate the offset between server time and client time
+        // so countdowns stay accurate even if clocks differ.
+        const serverNow  = new Date(NOW_ISO).getTime();
+        const clientNow  = Date.now();
+        const clockDrift = serverNow - clientNow;
+
+        function serverTime() {
+            return Date.now() + clockDrift;
+        }
+
+        // ── Format helpers ──
+        function formatCountdown(ms) {
+            if (ms <= 0) return "0 minutes";
+            const totalMin = Math.ceil(ms / 60000);
+            if (totalMin < 60) return totalMin + " minutes";
+            const h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+            return h + " hours " + (m > 0 ? m + " minutes" : "");
+        }
+
+        function pad(n) { return n < 10 ? "0" + n : n; }
+
+        // ── Tick every second ──
+        function tick() {
+            const now = new Date(serverTime());
+
+            // Live clock (HH:MM, no seconds)
+            const clockEl = document.getElementById("liveClock");
+            if (clockEl) {
+                clockEl.textContent = pad(now.getHours()) + ":" + pad(now.getMinutes());
+            }
+
+            const primaryEl   = document.getElementById("countdownPrimary");
+            const secondaryEl = document.getElementById("countdownSecondary");
+            const progressEl  = document.getElementById("progressBar");
+
+            if (!IS_AVAILABLE && CURRENT_EVT_END && CURRENT_EVT_END !== "None") {
+                // ── In Use: countdown to end ──
+                const endMs   = new Date(CURRENT_EVT_END).getTime();
+                const remaining = endMs - now.getTime();
+
+                if (remaining <= 0) {
+                    // Event just ended — reload to get fresh state
+                    location.reload();
+                    return;
+                }
+
+                if (primaryEl) {
+                    primaryEl.textContent = "Ends in " + formatCountdown(remaining);
+                }
+
+                // Progress bar
+                if (progressEl && CURRENT_EVT_START && CURRENT_EVT_START !== "None") {
+                    const startMs  = new Date(CURRENT_EVT_START).getTime();
+                    const total    = endMs - startMs;
+                    const elapsed  = now.getTime() - startMs;
+                    const pct      = Math.min(100, Math.max(0, (elapsed / total) * 100));
+                    progressEl.style.width = pct.toFixed(2) + "%";
+                }
+            } else if (IS_AVAILABLE && NEXT_EVT_START && NEXT_EVT_START !== "None") {
+                // ── Available: countdown to next event ──
+                const startMs   = new Date(NEXT_EVT_START).getTime();
+                const remaining = startMs - now.getTime();
+
+                if (remaining <= 0) {
+                    location.reload();
+                    return;
+                }
+
+                if (primaryEl) {
+                    primaryEl.textContent = "Free for " + formatCountdown(remaining);
+                }
+
+                // Progress bar: show how much free time has elapsed since it became free
+                if (progressEl && FREE_SINCE && FREE_SINCE !== "None") {
+                    const freeSinceMs = new Date(FREE_SINCE).getTime();
+                    const totalFree   = startMs - freeSinceMs;
+                    const elapsed     = now.getTime() - freeSinceMs;
+                    const pct         = Math.min(100, Math.max(0, (elapsed / totalFree) * 100));
+                    progressEl.style.width = pct.toFixed(2) + "%";
+                }
+            }
+
+            // Secondary countdown (next event)
+            if (secondaryEl && NEXT_EVT_START && NEXT_EVT_START !== "None") {
+                const startMs   = new Date(NEXT_EVT_START).getTime();
+                const remaining = startMs - now.getTime();
+                if (remaining > 0) {
+                    secondaryEl.textContent = "Starts in " + formatCountdown(remaining);
+                } else {
+                    location.reload();
+                }
+            }
+        }
+
+        // Run immediately, then every second
+        tick();
+        setInterval(tick, 1000);
+    </script>
+
+</body>
+</html>
