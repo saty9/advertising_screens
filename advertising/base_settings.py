@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,6 +32,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -76,6 +79,88 @@ CELERY_BEAT_SCHEDULE = {
     'cleanup-schedule-daily': {
         'task': 'room_schedules.tasks.cleanup_schedule',
         'schedule': crontab(minute=0, hour=0),
+    },
+}
+UNFOLD = {
+    "SITE_TITLE": "Display Screen Admin",
+    "SITE_HEADER": "Display Screen Admin",
+    "SITE_URL": "/",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Screens & Playlists",
+                "separator": False,
+                "items": [
+                    {
+                        "title": "Screens",
+                        "icon": "monitor",
+                        "link": reverse_lazy("admin:screens_screen_changelist"),
+                    },
+                    {
+                        "title": "Playlists",
+                        "icon": "queue_play_next",
+                        "link": reverse_lazy("admin:screens_playlist_changelist"),
+                    },
+                    {
+                        "title": "Sources",
+                        "icon": "perm_media",
+                        "link": reverse_lazy("admin:screens_source_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Scheduling",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Schedules",
+                        "icon": "calendar_today",
+                        "link": reverse_lazy("admin:screens_schedule_changelist"),
+                    },
+                    {
+                        "title": "Schedule Rules",
+                        "icon": "rule",
+                        "link": reverse_lazy("admin:screens_schedulerule_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Room Schedules",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Venues",
+                        "icon": "location_on",
+                        "link": reverse_lazy("admin:room_schedules_venue_changelist"),
+                    },
+                    {
+                        "title": "Rooms",
+                        "icon": "meeting_room",
+                        "link": reverse_lazy("admin:room_schedules_room_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Users & Groups",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Users",
+                        "icon": "person",
+                        "link": reverse_lazy("admin:auth_user_changelist"),
+                    },
+                    {
+                        "title": "Groups",
+                        "icon": "group",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                ],
+            },
+        ],
     },
 }
 

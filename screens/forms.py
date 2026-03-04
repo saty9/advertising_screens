@@ -27,6 +27,8 @@ class PlaylistAssigningSourceForm(ModelForm):
 
 
 class MultiFileInput(FileInput):
+    allow_multiple_selected = True
+
     def __init__(self, attrs=None):
         if attrs is not None:
             attrs = attrs.copy()
