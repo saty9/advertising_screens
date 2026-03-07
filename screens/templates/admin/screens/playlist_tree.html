@@ -1,0 +1,329 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+<style>
+  #playlist-graph-container {
+    width: 100%;
+    height: calc(100vh - 140px);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+  }
+  .dark #playlist-graph-container {
+    background: #1a1a2e;
+    border-color: #374151;
+  }
+  #playlist-graph-svg {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+  }
+  #playlist-graph-svg:active {
+    cursor: grabbing;
+  }
+  .playlist-node rect {
+    rx: 8;
+    cursor: pointer;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+    transition: filter 0.15s;
+  }
+  .playlist-node:hover rect {
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
+  }
+  .playlist-node text {
+    pointer-events: none;
+    user-select: none;
+  }
+  .playlist-link {
+    stroke: #9ca3af;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  #graph-tooltip {
+    position: fixed;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    max-width: 280px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+  }
+  .dark #graph-tooltip {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f3f4f6;
+  }
+  #graph-tooltip .tooltip-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  #graph-tooltip .tooltip-meta {
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+  .dark #graph-tooltip .tooltip-meta {
+    color: #9ca3af;
+  }
+  #graph-legend {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.75rem;
+    color: #374151;
+    z-index: 10;
+  }
+  .dark #graph-legend {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+  #graph-legend div {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+  #graph-legend div:last-child {
+    margin-bottom: 0;
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+</style>
+
+<h1 class="text-2xl font-semibold mb-4">{% trans "Playlist Inheritance" %}</h1>
+<p class="text-sm text-gray-500 mb-4">{% trans "Arrows show inheritance: sources from a parent playlist flow into its children. Drag nodes to rearrange. Scroll to zoom. Click a node to edit." %}</p>
+
+<div id="playlist-graph-container">
+  <svg id="playlist-graph-svg"></svg>
+  <div id="graph-legend">
+    <div><span class="legend-swatch" style="background:#4f46e5"></span> Playlist</div>
+    <div><span class="legend-swatch" style="background:#d97706"></span> Plays Everything</div>
+  </div>
+</div>
+
+<div id="graph-tooltip">
+  <div class="tooltip-name" id="tt-name"></div>
+  <div class="tooltip-meta" id="tt-sources"></div>
+  <div id="tt-desc" style="white-space:pre-wrap;max-height:80px;overflow:auto;color:#374151"></div>
+</div>
+
+<script src="{% static 'screens/js/d3.min.js' %}"></script>
+<script>
+(function () {
+  const COLOR_NORMAL = "#4f46e5";
+  const COLOR_EVERYTHING = "#d97706";
+  const COLOR_TEXT = "#ffffff";
+  const NODE_W = 160;
+  const NODE_H = 40;
+  const DEPTH_SPACING = 120;
+
+  const tooltip = document.getElementById("graph-tooltip");
+  const ttName = document.getElementById("tt-name");
+  const ttSources = document.getElementById("tt-sources");
+  const ttDesc = document.getElementById("tt-desc");
+
+  fetch("/api/playlist_tree")
+    .then(r => r.json())
+    .then(data => buildGraph(data))
+    .catch(err => {
+      document.getElementById("playlist-graph-container").innerHTML =
+        '<p style="padding:2rem;color:#dc2626">Failed to load playlist data: ' + err + '</p>';
+    });
+
+  function buildGraph(data) {
+    // Build node and edge lists
+    const nodeMap = {};
+    const nodes = [];
+    const links = [];
+
+    Object.entries(data).forEach(([id, info]) => {
+      const node = {
+        id: parseInt(id),
+        name: info.name,
+        description: info.description || "",
+        source_count: info.source_count || 0,
+        plays_everything: info.plays_everything,
+        depth: 0,
+      };
+      nodeMap[node.id] = node;
+      nodes.push(node);
+    });
+
+    Object.entries(data).forEach(([id, info]) => {
+      (info.children || []).forEach(childId => {
+        if (nodeMap[childId]) {
+          links.push({ source: parseInt(id), target: childId });
+        }
+      });
+    });
+
+    // BFS to assign depths (longest path from any root)
+    const inDegree = {};
+    nodes.forEach(n => inDegree[n.id] = 0);
+    links.forEach(l => { inDegree[l.target] = (inDegree[l.target] || 0) + 1; });
+    const roots = nodes.filter(n => inDegree[n.id] === 0);
+
+    // Topological depth via BFS
+    const queue = [...roots];
+    roots.forEach(n => n.depth = 0);
+    const visited = new Set(roots.map(n => n.id));
+    while (queue.length) {
+      const cur = queue.shift();
+      (data[cur.id]?.children || []).forEach(childId => {
+        const child = nodeMap[childId];
+        if (!child) return;
+        child.depth = Math.max(child.depth, cur.depth + 1);
+        if (!visited.has(childId)) {
+          visited.add(childId);
+          queue.push(child);
+        }
+      });
+    }
+
+    // Group by depth, assign initial x positions
+    const byDepth = {};
+    nodes.forEach(n => {
+      if (!byDepth[n.depth]) byDepth[n.depth] = [];
+      byDepth[n.depth].push(n);
+    });
+
+    const svgEl = document.getElementById("playlist-graph-svg");
+    const W = svgEl.clientWidth || 900;
+
+    Object.values(byDepth).forEach(group => {
+      const step = W / (group.length + 1);
+      group.forEach((n, i) => {
+        n.x = step * (i + 1);
+        n.y = n.depth * DEPTH_SPACING + 60;
+      });
+    });
+
+    // SVG setup
+    const svg = d3.select("#playlist-graph-svg");
+    svg.selectAll("*").remove();
+
+    // Arrow marker
+    svg.append("defs").append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 10)
+      .attr("refY", 0)
+      .attr("markerWidth", 7)
+      .attr("markerHeight", 7)
+      .attr("orient", "auto")
+      .append("path")
+        .attr("d", "M0,-5L10,0L0,5")
+        .attr("fill", "#9ca3af");
+
+    // Zoom/pan layer
+    const g = svg.append("g");
+    svg.call(d3.zoom()
+      .scaleExtent([0.2, 3])
+      .on("zoom", e => g.attr("transform", e.transform))
+    );
+
+    // Simulation
+    const simulation = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(links).id(d => d.id).distance(120).strength(0.6))
+      .force("collide", d3.forceCollide(90))
+      .force("x", d3.forceX(d => {
+        const group = byDepth[d.depth];
+        const step = W / (group.length + 1);
+        return step * (group.indexOf(d) + 1);
+      }).strength(0.15))
+      .force("y", d3.forceY(d => d.depth * DEPTH_SPACING + 60).strength(0.4));
+
+    // Draw edges
+    const link = g.append("g")
+      .selectAll("line")
+      .data(links)
+      .join("line")
+        .attr("class", "playlist-link")
+        .attr("marker-end", "url(#arrowhead)");
+
+    // Draw nodes
+    const node = g.append("g")
+      .selectAll("g")
+      .data(nodes)
+      .join("g")
+        .attr("class", "playlist-node")
+        .call(d3.drag()
+          .on("start", (event, d) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+          })
+          .on("drag", (event, d) => {
+            d.fx = event.x;
+            d.fy = event.y;
+          })
+          .on("end", (event, d) => {
+            if (!event.active) simulation.alphaTarget(0);
+            // Keep pinned after drag
+          })
+        )
+        .on("click", (event, d) => {
+          window.location = "/admin/screens/playlist/" + d.id + "/change/";
+        })
+        .on("mouseenter", (event, d) => {
+          ttName.textContent = d.name;
+          ttSources.textContent = d.plays_everything
+            ? "Plays everything · " + d.source_count + " direct source(s)"
+            : d.source_count + " source(s)";
+          ttDesc.textContent = d.description || "";
+          tooltip.style.display = "block";
+        })
+        .on("mousemove", event => {
+          tooltip.style.left = (event.clientX + 14) + "px";
+          tooltip.style.top = (event.clientY - 10) + "px";
+        })
+        .on("mouseleave", () => {
+          tooltip.style.display = "none";
+        });
+
+    node.append("rect")
+      .attr("x", -NODE_W / 2)
+      .attr("y", -NODE_H / 2)
+      .attr("width", NODE_W)
+      .attr("height", NODE_H)
+      .attr("rx", 8)
+      .attr("fill", d => d.plays_everything ? COLOR_EVERYTHING : COLOR_NORMAL);
+
+    node.append("text")
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("fill", COLOR_TEXT)
+      .attr("font-size", "12px")
+      .attr("font-family", "system-ui, sans-serif")
+      .text(d => d.name.length > 22 ? d.name.slice(0, 21) + "…" : d.name);
+
+    // Tick update
+    simulation.on("tick", () => {
+      link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y + NODE_H / 2)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y - NODE_H / 2);
+
+      node.attr("transform", d => `translate(${d.x},${d.y})`);
+    });
+  }
+})();
+</script>
+{% endblock %}

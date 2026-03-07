@@ -127,14 +127,18 @@ def render_playlist_json(playlist, screen_interspersed=None, screen_id=None):
 
 
 def view_playlist_tree_json(request):
-    parent_child_pairs = models.Playlist.objects.prefetch_related("children").values_list("id", "name", "children_list__inheriting_list_id")
+    playlists = models.Playlist.objects.prefetch_related("children_list").annotate(
+        source_count=Count("playlistentry")
+    )
     out = {}
-    for parent, parent_name, child in parent_child_pairs:
-        if parent not in out:
-            out[parent] = {"name": parent_name, "children": []}
-        if child:
-            out[parent]["children"].append(child)
-
+    for pl in playlists:
+        out[pl.id] = {
+            "name": pl.name,
+            "description": pl.description,
+            "source_count": pl.source_count,
+            "plays_everything": pl.plays_everything,
+            "children": list(pl.children_list.values_list("inheriting_list_id", flat=True)),
+        }
     return JsonResponse(out)
 
 

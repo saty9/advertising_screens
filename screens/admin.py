@@ -26,6 +26,19 @@ class PlaylistDisplay(ModelAdmin):
     ]
     inlines = [PlaylistParentsInline, PlaylistEntryInline]
 
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            re_path(r'^tree/$', self.admin_site.admin_view(self.playlist_tree_view), name='screens_playlist_tree'),
+        ]
+        return my_urls + urls
+
+    def playlist_tree_view(self, request):
+        context = self.admin_site.each_context(request)
+        context['title'] = 'Playlist Inheritance'
+        context['is_fullwidth'] = "1"
+        return TemplateResponse(request, 'admin/screens/playlist_tree.html', context)
+
 
 class ScheduleRuleInline(StackedInline):
     model = ScheduleRule

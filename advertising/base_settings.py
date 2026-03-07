@@ -106,6 +106,11 @@ UNFOLD = {
                         "link": reverse_lazy("admin:screens_playlist_changelist"),
                     },
                     {
+                        "title": "Playlist Tree",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:screens_playlist_tree"),
+                    },
+                    {
                         "title": "Sources",
                         "icon": "perm_media",
                         "link": reverse_lazy("admin:screens_source_changelist"),
