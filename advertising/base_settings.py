@@ -162,12 +162,12 @@ UNFOLD = {
                     {
                         "title": "Periodic Tasks",
                         "icon": "schedule",
-                        "link": reverse_lazy("admin:django_celery_beat_periodictask_changelist"),
+                        "link": reverse_lazy("admin:app_list", kwargs={"app_label": "django_celery_beat"}),
                     },
                     {
                         "title": "Task Results",
                         "icon": "task_alt",
-                        "link": reverse_lazy("admin:django_celery_results_taskresult_changelist"),
+                        "link": reverse_lazy("admin:app_list", kwargs={"app_label": "django_celery_results"}),
                     },
                 ],
             },
