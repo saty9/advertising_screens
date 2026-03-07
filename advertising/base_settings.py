@@ -174,6 +174,7 @@ UNFOLD = {
             {
                 "title": "Users & Groups",
                 "separator": True,
+                "collapsible": True,
                 "items": [
                     {
                         "title": "Users",
