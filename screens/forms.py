@@ -1,7 +1,8 @@
 from screens.models import Playlist
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, FileInput, FileField
+from django.forms import ModelForm, FileField
+from unfold.widgets import UnfoldAdminImageFieldWidget
 
 
 class PlaylistAssigningSourceForm(ModelForm):
@@ -26,16 +27,13 @@ class PlaylistAssigningSourceForm(ModelForm):
         return self.instance
 
 
-class MultiFileInput(FileInput):
+class MultiFileInput(UnfoldAdminImageFieldWidget):
     allow_multiple_selected = True
 
     def __init__(self, attrs=None):
-        if attrs is not None:
-            attrs = attrs.copy()
-        else:
-            attrs = {}
+        attrs = dict(attrs or {})
         attrs["multiple"] = True
-        super().__init__(attrs)
+        super().__init__(attrs=attrs)
 
     def value_from_datadict(self, data, files, name):
         return files.getlist(name)

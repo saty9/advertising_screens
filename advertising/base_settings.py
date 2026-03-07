@@ -110,6 +110,11 @@ UNFOLD = {
                         "icon": "perm_media",
                         "link": reverse_lazy("admin:screens_source_changelist"),
                     },
+                    {
+                        "title": "Bulk Upload Sources",
+                        "icon": "upload_file",
+                        "link": reverse_lazy("admin:screens_source_bulk_create"),
+                    },
                 ],
             },
             {
@@ -141,6 +146,22 @@ UNFOLD = {
                         "title": "Rooms",
                         "icon": "meeting_room",
                         "link": reverse_lazy("admin:room_schedules_room_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Task Management",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Periodic Tasks",
+                        "icon": "schedule",
+                        "link": reverse_lazy("admin:django_celery_beat_periodictask_changelist"),
+                    },
+                    {
+                        "title": "Task Results",
+                        "icon": "task_alt",
+                        "link": reverse_lazy("admin:django_celery_results_taskresult_changelist"),
                     },
                 ],
             },

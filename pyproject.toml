@@ -5,20 +5,22 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "django==4.0.2",
-    "django-admin-ordering==0.14.2",
-    "django-cleanup==6.0.0",
+    "django==4.2.29",
+    "django-admin-ordering==0.20.0",
+    "django-cleanup==9.0.0",
+    "django-unfold==0.82.0",
     "celery[redis]==5.3.6",
     "django-celery-beat==2.5.0",
-    "django_celery_results==2.6.0",
-    "django-recurrence==1.11.1",
-    "httplib2==0.20.4",
-    "pillow==11.0.0",
+    "django-celery-results==2.6.0",
+    "django-recurrence==1.14",
+    "httplib2==0.31.2",
+    "msal>=1.28.0",
+    "pillow==12.1.1",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "time-machine==2.6.0",
+    "time-machine==3.2.0",
 ]
 runtime = [
     "mysqlclient==2.2.0",
