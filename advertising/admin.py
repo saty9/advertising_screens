@@ -20,6 +20,14 @@ from django_celery_beat.admin import PeriodicTaskForm, TaskSelectWidget
 from django_celery_results.admin import TaskResultAdmin
 from django_celery_results.models import TaskResult
 
+def dashboard_callback(_request, context):
+    context["app_list"] = [
+        app for app in context.get("app_list", [])
+        if app["app_label"] in ("screens")
+    ]
+    return context
+
+
 admin.site.unregister(User)
 admin.site.unregister(Group)
 admin.site.unregister(PeriodicTask)
