@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+import advertising.admin  # noqa: F401 — registers celery admin with unfold styling
 from django.views.generic import RedirectView
 
 from advertising import settings
