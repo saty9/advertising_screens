@@ -158,6 +158,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = False
+DJANGO_CELERY_BEAT_TZ_AWARE=False
 
 
 # Static files (CSS, JavaScript, Images)
