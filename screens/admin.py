@@ -1,6 +1,7 @@
 from admin_ordering.admin import OrderableAdmin
 from django.urls import re_path
 from django.contrib import admin
+from django.template.response import TemplateResponse
 from unfold.admin import ModelAdmin, TabularInline, StackedInline
 
 from screens.forms import SourceBulkCreateForm, PlaylistAssigningSourceForm
@@ -74,7 +75,7 @@ class SourceDisplay(ModelAdmin):
     def get_urls(self):
         urls = super(SourceDisplay, self).get_urls()
         my_urls = [
-            re_path(r'^bulk_create/$', self.bulk_create_view),
+            re_path(r'^bulk_create/$', self.bulk_create_view, name='screens_source_bulk_create'),
         ]
         return my_urls + urls
 
