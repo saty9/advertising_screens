@@ -64,7 +64,18 @@ django.jQuery(function($) {
     }
   });
 
-  $("input[name='playlists']").change(function (event) {
+  $("input[name='playlists']").change(function () {
     re_flow_possible_playlists()
   })
+
+  // Update the unfold file input text display when files are selected on the bulk upload form
+  $("#id_files").change(function(event) {
+    const files = event.target.files;
+    const label = $(this).closest('[class*="overflow-hidden"]').parent().siblings("label").find("input[type='text']");
+    if (files.length === 1) {
+      label.val(files[0].name);
+    } else if (files.length > 1) {
+      label.val(files.length + " files selected");
+    }
+  });
 });

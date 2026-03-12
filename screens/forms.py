@@ -1,7 +1,9 @@
 from screens.models import Playlist
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, FileInput, FileField
+from django.forms import ModelForm, FileField
+from unfold.widgets import UnfoldAdminImageFieldWidget
+from advertising.settings import MAX_IMG_WIDTH, MAX_IMG_HEIGHT
 
 
 class PlaylistAssigningSourceForm(ModelForm):
@@ -26,14 +28,13 @@ class PlaylistAssigningSourceForm(ModelForm):
         return self.instance
 
 
-class MultiFileInput(FileInput):
+class MultiFileInput(UnfoldAdminImageFieldWidget):
+    allow_multiple_selected = True
+
     def __init__(self, attrs=None):
-        if attrs is not None:
-            attrs = attrs.copy()
-        else:
-            attrs = {}
+        attrs = dict(attrs or {})
         attrs["multiple"] = True
-        super().__init__(attrs)
+        super().__init__(attrs=attrs)
 
     def value_from_datadict(self, data, files, name):
         return files.getlist(name)
@@ -66,7 +67,7 @@ class MultiFileField(FileField):
 
 
 class SourceBulkCreateForm(PlaylistAssigningSourceForm):
-    files = MultiFileField(help_text="Only upload one type of file at a time resolution of files should be 1360x768, videos must be mp4")
+    files = MultiFileField(help_text=f"Only upload one type of file at a time resolution of files should be {MAX_IMG_WIDTH}x{MAX_IMG_HEIGHT}, videos must be mp4")
 
     def is_valid(self):
         """Return True if the form has no errors, or False otherwise."""

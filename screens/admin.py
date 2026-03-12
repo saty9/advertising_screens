@@ -1,17 +1,19 @@
 from admin_ordering.admin import OrderableAdmin
 from django.urls import re_path
 from django.contrib import admin
+from django.template.response import TemplateResponse
+from unfold.admin import ModelAdmin, TabularInline, StackedInline
 
 from screens.forms import SourceBulkCreateForm, PlaylistAssigningSourceForm
 from screens.models import Playlist, Schedule, ScheduleRule, Screen, Source, PlaylistEntry
 
 
-class PlaylistEntryInline(OrderableAdmin, admin.TabularInline):
+class PlaylistEntryInline(OrderableAdmin, TabularInline):
     model = PlaylistEntry
     ordering_field = 'number'
 
 
-class PlaylistParentsInline(admin.TabularInline):
+class PlaylistParentsInline(TabularInline):
     model = Playlist.parents.through
     fk_name = "inheriting_list"
     verbose_name_plural = "Playlists to inherit from"
@@ -19,19 +21,32 @@ class PlaylistParentsInline(admin.TabularInline):
     extra = 1
 
 
-class PlaylistDisplay(admin.ModelAdmin):
+class PlaylistDisplay(ModelAdmin):
     fieldsets = [
         (None,               {'fields': ['name', 'description', 'interspersed_source', 'plays_everything']}),
     ]
     inlines = [PlaylistParentsInline, PlaylistEntryInline]
 
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            re_path(r'^tree/$', self.admin_site.admin_view(self.playlist_tree_view), name='screens_playlist_tree'),
+        ]
+        return my_urls + urls
 
-class ScheduleRuleInline(admin.StackedInline):
+    def playlist_tree_view(self, request):
+        context = self.admin_site.each_context(request)
+        context['title'] = 'Playlist Inheritance'
+        context['is_fullwidth'] = "1"
+        return TemplateResponse(request, 'admin/screens/playlist_tree.html', context)
+
+
+class ScheduleRuleInline(StackedInline):
     model = ScheduleRule
     extra = 1
 
 
-class ScheduleDisplay(admin.ModelAdmin):
+class ScheduleDisplay(ModelAdmin):
     fieldsets = [
         (None,               {'fields': ['name', 'description', 'default_playlist', 'is_default']}),
     ]
@@ -49,7 +64,7 @@ class PlaylistListFilter(admin.SimpleListFilter):
         return queryset.filter(playlist__id=self.value()) or queryset.filter(playlistentry__playlist__id=self.value())
 
 
-class SourceDisplay(admin.ModelAdmin):
+class SourceDisplay(ModelAdmin):
     readonly_fields = ('image_preview',)
     list_display = ('name', 'playlist_names', 'created_at', "valid_from", "expires_at")
     list_filter = (
@@ -60,7 +75,7 @@ class SourceDisplay(admin.ModelAdmin):
     def get_urls(self):
         urls = super(SourceDisplay, self).get_urls()
         my_urls = [
-            re_path(r'^bulk_create/$', self.bulk_create_view),
+            re_path(r'^bulk_create/$', self.bulk_create_view, name='screens_source_bulk_create'),
         ]
         return my_urls + urls
 
@@ -87,7 +102,7 @@ class SourceDisplay(admin.ModelAdmin):
         )
 
 
-class ScreenAdmin(admin.ModelAdmin):
+class ScreenAdmin(ModelAdmin):
     readonly_fields = ('screen_preview',)
     list_display = ('name', 'ip', 'online', 'last_seen')
 

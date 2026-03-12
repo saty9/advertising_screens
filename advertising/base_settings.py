@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,6 +32,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -73,9 +76,122 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'room_schedules.tasks.build_schedule',
         'schedule': crontab(minute=1),
     },
-    'cleanup-schedule-daily': {
+    'cleanup-room-schedule-daily': {
         'task': 'room_schedules.tasks.cleanup_schedule',
         'schedule': crontab(minute=0, hour=0),
+    },
+}
+
+UNFOLD = {
+    "SITE_TITLE": "Display Screen Admin",
+    "SITE_HEADER": "Display Screen Admin",
+    "DASHBOARD_CALLBACK": "advertising.admin.dashboard_callback",
+    "SITE_URL": "/",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Screens & Playlists",
+                "separator": False,
+                "items": [
+                    {
+                        "title": "Screens",
+                        "icon": "monitor",
+                        "link": reverse_lazy("admin:screens_screen_changelist"),
+                    },
+                    {
+                        "title": "Playlists",
+                        "icon": "queue_play_next",
+                        "link": reverse_lazy("admin:screens_playlist_changelist"),
+                    },
+                    {
+                        "title": "Playlist Tree",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:screens_playlist_tree"),
+                    },
+                    {
+                        "title": "Sources",
+                        "icon": "perm_media",
+                        "link": reverse_lazy("admin:screens_source_changelist"),
+                    },
+                    {
+                        "title": "Bulk Upload Sources",
+                        "icon": "upload_file",
+                        "link": reverse_lazy("admin:screens_source_bulk_create"),
+                    },
+                ],
+            },
+            {
+                "title": "Scheduling",
+                "separator": False,
+                "items": [
+                    {
+                        "title": "Schedules",
+                        "icon": "calendar_today",
+                        "link": reverse_lazy("admin:screens_schedule_changelist"),
+                    },
+                    {
+                        "title": "Schedule Rules",
+                        "icon": "rule",
+                        "link": reverse_lazy("admin:screens_schedulerule_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Room Schedules",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Venues",
+                        "icon": "location_on",
+                        "link": reverse_lazy("admin:room_schedules_venue_changelist"),
+                    },
+                    {
+                        "title": "Rooms",
+                        "icon": "meeting_room",
+                        "link": reverse_lazy("admin:room_schedules_room_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Task Management",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Periodic Tasks",
+                        "icon": "schedule",
+                        "link": reverse_lazy("admin:app_list", kwargs={"app_label": "django_celery_beat"}),
+                    },
+                    {
+                        "title": "Task Results",
+                        "icon": "task_alt",
+                        "link": reverse_lazy("admin:app_list", kwargs={"app_label": "django_celery_results"}),
+                    },
+                ],
+            },
+            {
+                "title": "Users & Groups",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Users",
+                        "icon": "person",
+                        "link": reverse_lazy("admin:auth_user_changelist"),
+                    },
+                    {
+                        "title": "Groups",
+                        "icon": "group",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                ],
+            },
+        ],
     },
 }
 
