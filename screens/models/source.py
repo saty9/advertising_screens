@@ -37,6 +37,12 @@ class Source(models.Model):
     expires_at = models.DateTimeField(blank=True, null=True, default=None)
     valid_from = models.DateTimeField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        'auth.User', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='created_sources', editable=False,
+    )
+    width = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    height = models.PositiveIntegerField(null=True, blank=True, editable=False)
     playlists = models.ManyToManyField("Playlist", related_name="sources", symmetrical=False,
                                        through="PlaylistEntry", through_fields=("source", "playlist"),
                                        help_text="All sources that would be played by these playlists will be included in this one too.",
@@ -82,6 +88,12 @@ class Source(models.Model):
 
     playlist_names.short_description = "Playlists"
 
+    @property
+    def resolution(self):
+        if self.width and self.height:
+            return f"{self.width}×{self.height}"
+        return "-"
+    
     def full_clean(self, exclude=None, validate_unique=True):
         return super().full_clean(exclude, validate_unique)
 
@@ -94,6 +106,15 @@ def set_orig_file_hash(sender, instance=None, raw=False, **kwargs):
     instance._orig = None
     if instance is None or raw:
         return
+
+    if instance.type == Source.IMAGE and instance.file:
+        try:
+            img = Image.open(instance.file)
+            instance.width, instance.height = img.width, img.height
+        except Exception:
+            instance.width = instance.height = None
+    else:
+        instance.width = instance.height = None
 
     instance._orig_file_hash = None
     try:
