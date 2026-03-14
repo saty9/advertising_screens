@@ -71,14 +71,6 @@ class ScheduleDisplay(ModelAdmin):
     inlines = [ScheduleRuleInline]
 
 
-@admin.register(ScheduleRule)
-class ScheduleRuleAdmin(ModelAdmin):
-    list_display = ('schedule', 'playlist', 'starts', 'start_time', 'end_time', 'priority')
-    list_filter = ('schedule',)
-    list_select_related = ('schedule', 'playlist')
-    search_fields = ('schedule__name', 'playlist__name')
-
-
 class PlaylistListFilter(admin.SimpleListFilter):
     title = "In Playlist"
     parameter_name = "playlist"

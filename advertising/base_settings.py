@@ -108,6 +108,11 @@ UNFOLD = {
                         "link": reverse_lazy("admin:screens_playlist_changelist"),
                     },
                     {
+                        "title": "Schedules",
+                        "icon": "calendar_today",
+                        "link": reverse_lazy("admin:screens_schedule_changelist"),
+                    },
+                    {
                         "title": "Playlist Tree",
                         "icon": "account_tree",
                         "link": reverse_lazy("admin:screens_playlist_tree"),
@@ -121,22 +126,6 @@ UNFOLD = {
                         "title": "Bulk Upload Sources",
                         "icon": "upload_file",
                         "link": reverse_lazy("admin:screens_source_bulk_create"),
-                    },
-                ],
-            },
-            {
-                "title": "Scheduling",
-                "separator": False,
-                "items": [
-                    {
-                        "title": "Schedules",
-                        "icon": "calendar_today",
-                        "link": reverse_lazy("admin:screens_schedule_changelist"),
-                    },
-                    {
-                        "title": "Schedule Rules",
-                        "icon": "rule",
-                        "link": reverse_lazy("admin:screens_schedulerule_changelist"),
                     },
                 ],
             },
