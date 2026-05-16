@@ -1,4 +1,3 @@
-import datetime
 from celery import shared_task
 from django.utils import timezone
 from django.db.models import F
@@ -6,7 +5,7 @@ from screens.models import Source, ScheduleRule
 
 @shared_task(name='screens.tasks.cleanup_sources')
 def cleanup_sources():
-    Source.objects.filter(expires_at__lte=datetime.datetime.now()).delete()
+    Source.objects.filter(expires_at__lte=timezone.now()).delete()
 
 @shared_task(name='screens.tasks.update_playlists')
 def update_playlists():

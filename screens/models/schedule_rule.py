@@ -21,7 +21,10 @@ class ScheduleRule(models.Model):
     priority = models.IntegerField()
 
     def is_expired(self):
-        return not bool(self.occurrences.after(timezone.datetime.today() - timezone.timedelta(days=2), inc=True))
+        # django-recurrence works in naive datetime space; use naive local
+        # time consistently with Schedule.get_playlist.
+        cutoff = timezone.localtime(timezone.now()).replace(tzinfo=None) - timezone.timedelta(days=2)
+        return not bool(self.occurrences.after(cutoff, inc=True))
 
 
 @receiver(pre_save, sender=ScheduleRule)

@@ -1,8 +1,9 @@
 from django.db import models
 from django.template.loader import get_template
 from django.urls import reverse
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.db.models import Q
+from django.utils import timezone
 
 from screens.models import Source
 from screens.models.schedule import Schedule
@@ -21,7 +22,7 @@ class Screen(models.Model):
     last_seen = models.DateTimeField(auto_now_add=True, blank=True)
     
     def online(self):
-        return self.last_seen and self.last_seen >= datetime.now()-timedelta(minutes=1)
+        return self.last_seen and self.last_seen >= timezone.now()-timedelta(minutes=1)
     online.boolean = True
 
     def screen_preview(self):

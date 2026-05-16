@@ -12,11 +12,14 @@ class Schedule(models.Model):
     is_default = models.BooleanField(default=False)
 
     def get_playlist(self):
-        yesterday = timezone.now() - timedelta(days=1)
-        tomorrow = timezone.now() + timedelta(days=1)
+        # Local (Europe/London) wall clock: `starts` is a DateField and
+        # start_time/end_time are TimeFields keyed to civil time, and
+        # django-recurrence works in naive datetime space — so strip tz.
+        now = timezone.localtime().replace(tzinfo=None)
+        yesterday = now - timedelta(days=1)
+        tomorrow = now + timedelta(days=1)
         playlist = self.default_playlist
         priority = 999999
-        now = timezone.now()
         for rule in self.schedulerule_set.filter(starts__lte=now, start_time__lte=now.time(), end_time__gte=now.time()).all():
             if rule.priority > priority:
                 continue

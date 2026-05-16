@@ -1,7 +1,7 @@
-from datetime import datetime
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
+from django.utils import timezone
 
 from screens.models import Source, PlaylistEntry
 
@@ -28,7 +28,7 @@ class Playlist(models.Model):
         if block_list is None:
             block_list = []
 
-        now = datetime.now()
+        now = timezone.now()
         if self.plays_everything:
             valid_sources = Source.objects\
                 .exclude(pk=self.interspersed_source_id)\
@@ -46,7 +46,7 @@ class Playlist(models.Model):
         if block_list is None:
             block_list = []
         block_list.append(self.id)
-        self.last_updated = datetime.now()
+        self.last_updated = timezone.now()
         self.save()
         for child in self.children.exclude(id__in=block_list):
             child.meta_times_touch(block_list)

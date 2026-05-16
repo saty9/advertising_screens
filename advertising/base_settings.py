@@ -56,6 +56,8 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/London'
+# Keep Beat scheduling in CELERY_TIMEZONE (matches app TIME_ZONE) rather than UTC.
+CELERY_ENABLE_UTC = False
 
 from celery.schedules import crontab
 
@@ -262,8 +264,8 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False
-DJANGO_CELERY_BEAT_TZ_AWARE=False
+USE_TZ = True
+DJANGO_CELERY_BEAT_TZ_AWARE = True
 
 
 # Static files (CSS, JavaScript, Images)
