@@ -3,8 +3,6 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
-from screens.models import Source, PlaylistEntry
-
 
 def flatten(t):
     return [item for sublist in t for item in sublist]
@@ -13,8 +11,11 @@ def flatten(t):
 class Playlist(models.Model):
     name = models.TextField()
     description = models.TextField()
-    plays_everything = models.BooleanField(default=False)
-    interspersed_source = models.ForeignKey(Source, null=True, default=None, on_delete=models.SET_NULL, blank=True)
+    interspersed_playlist = models.ForeignKey("self", null=True, default=None, on_delete=models.SET_NULL,
+                                              blank=True, related_name="+")
+    interspersed_rate = models.PositiveIntegerField(
+        default=1,
+        help_text="number of base playlist items to play before one item from the interspersed playlist")
     last_updated = models.DateTimeField(auto_now=True)
     parents = models.ManyToManyField("self", related_name="children", symmetrical=False,
                                      through="PlaylistRelation", through_fields=("inheriting_list", "super_list"),
@@ -29,18 +30,10 @@ class Playlist(models.Model):
             block_list = []
 
         now = timezone.now()
-        if self.plays_everything:
-            valid_sources = Source.objects\
-                .exclude(pk=self.interspersed_source_id)\
-                .filter(Q(valid_from__lte=now) | Q(valid_from__isnull=True))\
-                .filter(Q(expires_at__gte=now) | Q(expires_at__isnull=True))
-            return [PlaylistEntry(source=s) for s in valid_sources] + self.parent_sources(block_list)
-        else:
-            return list(self.playlistentry_set.select_related("source") \
-                        .exclude(source_id=self.interspersed_source_id) \
-                        .filter(Q(source__valid_from__lte=now) | Q(source__valid_from__isnull=True)) \
-                        .filter(Q(source__expires_at__gte=now) | Q(source__expires_at__isnull=True)) \
-                        .order_by('number')) + self.parent_sources(block_list)
+        return list(self.playlistentry_set.select_related("source")
+                    .filter(Q(source__valid_from__lte=now) | Q(source__valid_from__isnull=True))
+                    .filter(Q(source__expires_at__gte=now) | Q(source__expires_at__isnull=True))
+                    .order_by('number')) + self.parent_sources(block_list)
 
     def meta_times_touch(self, block_list=None):
         if block_list is None:

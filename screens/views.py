@@ -58,8 +58,6 @@ def view_screen(request, screen_id):
             current_playlist = screen.schedule.get_playlist()
             view_dict = {
                 'playlist': current_playlist.get_sources(),
-                'interspersed': models.PlaylistEntry(source=current_playlist.interspersed_source),
-                'screen_interspersed': models.PlaylistEntry(source=screen.interspersed_source),
                 "current_playlist": current_playlist.pk,
                 "playlist_last_updated": timezone.localtime(current_playlist.last_updated).isoformat(),
                 "screen_id": screen_id,
@@ -76,7 +74,6 @@ def view_playlist(request, playlist_id):
         current_playlist = models.Playlist.objects.get(id=playlist_id)
         view_dict = {
             'playlist': current_playlist.get_sources(),
-            'interspersed': models.PlaylistEntry(source=current_playlist.interspersed_source),
             "current_playlist": current_playlist.pk,
             "playlist_last_updated": timezone.localtime(current_playlist.last_updated).isoformat()
         }
@@ -95,7 +92,7 @@ def view_screen_json(request, screen_id):
         screen = models.Screen.objects.get(id=screen_id)
         if screen.schedule:
             current_playlist = screen.schedule.get_playlist()
-            return JsonResponse(render_playlist_json(current_playlist, screen_interspersed=screen.interspersed_source, screen_id=screen_id))
+            return JsonResponse(render_playlist_json(current_playlist, screen=screen, screen_id=screen_id))
         else:
             return JsonResponse({"error": "no schedule assigned to this screen"}, status=404)
     except models.Screen.DoesNotExist:
@@ -110,19 +107,37 @@ def view_playlist_json(request, playlist_id):
         return JsonResponse({"error": "playlist doesnt exist"}, status=404)
 
 
-def render_playlist_json(playlist, screen_interspersed=None, screen_id=None):
-    interspersed = []
-    if playlist.interspersed_source:
-        interspersed.append({"src": playlist.interspersed_source.src(), "type": playlist.interspersed_source.type})
-    if screen_interspersed:
-        interspersed.append(
-            {"src": screen_interspersed.src(), "type": screen_interspersed.type})
+def serialize_entries(entries):
+    return [{"src": e.source.src(), "type": e.source.type, "duration": e.duration} for e in entries]
 
+
+def aggregate_last_updated(playlist, screen=None):
+    candidates = [playlist.last_updated]
+    if playlist.interspersed_playlist:
+        candidates.append(playlist.interspersed_playlist.last_updated)
+    if screen and screen.interspersed_playlist:
+        candidates.append(screen.interspersed_playlist.last_updated)
+    return max(candidates)
+
+
+def _interspersed_stream(playlist, rate):
+    if not playlist:
+        return None
+    items = serialize_entries(playlist.get_sources())
+    if not items:
+        return None
+    return {"items": items, "rate": max(1, rate)}
+
+
+def render_playlist_json(playlist, screen=None, screen_id=None):
     return {
-        'playlist': list(map(lambda x: {"src": x.source.src(), "type": x.source.type, "duration": x.duration}, playlist.get_sources())),
-        'interspersed': interspersed,
+        'playlist': serialize_entries(playlist.get_sources()),
+        'interspersed': {
+            "playlist": _interspersed_stream(playlist.interspersed_playlist, playlist.interspersed_rate),
+            "screen": _interspersed_stream(screen.interspersed_playlist, screen.interspersed_rate) if screen else None,
+        },
         "current_playlist": playlist.pk,
-        "playlist_last_updated": timezone.localtime(playlist.last_updated).isoformat(),
+        "playlist_last_updated": timezone.localtime(aggregate_last_updated(playlist, screen)).isoformat(),
         "screen_id": screen_id
     }
 
@@ -137,7 +152,6 @@ def view_playlist_tree_json(request):
             "name": pl.name,
             "description": pl.description,
             "source_count": pl.source_count,
-            "plays_everything": pl.plays_everything,
             "children": list(pl.children_list.values_list("inheriting_list_id", flat=True)),
         }
     return JsonResponse(out)
@@ -151,7 +165,7 @@ def _get_meta(request, screen):
     screen.last_seen = timezone.now()
     screen.save()
     out = {"current_playlist": playlist.pk,
-           "playlist_last_updated": timezone.localtime(playlist.last_updated).isoformat()}
+           "playlist_last_updated": timezone.localtime(aggregate_last_updated(playlist, screen)).isoformat()}
     return JsonResponse(out)
 
 
