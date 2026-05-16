@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import resolve, Resolver404
 from urllib.parse import urlparse
 from screens import models
-from datetime import datetime
+from django.utils import timezone
 from advertising.settings import AUTO_MAKE_SCREENS_FOR_NEW_IPS, USE_LAST_FORWARDED_FOR_IP, USE_FIRST_FORWARDED_FOR_IP
 import socket
 
@@ -61,7 +61,7 @@ def view_screen(request, screen_id):
                 'interspersed': models.PlaylistEntry(source=current_playlist.interspersed_source),
                 'screen_interspersed': models.PlaylistEntry(source=screen.interspersed_source),
                 "current_playlist": current_playlist.pk,
-                "playlist_last_updated": current_playlist.last_updated.isoformat(),
+                "playlist_last_updated": timezone.localtime(current_playlist.last_updated).isoformat(),
                 "screen_id": screen_id,
             }
             return render(request, 'screens/basic_screen.html', view_dict)
@@ -78,7 +78,7 @@ def view_playlist(request, playlist_id):
             'playlist': current_playlist.get_sources(),
             'interspersed': models.PlaylistEntry(source=current_playlist.interspersed_source),
             "current_playlist": current_playlist.pk,
-            "playlist_last_updated": current_playlist.last_updated.isoformat()
+            "playlist_last_updated": timezone.localtime(current_playlist.last_updated).isoformat()
         }
         return render(request, 'screens/basic_screen.html', view_dict)
     except models.Playlist.DoesNotExist:
@@ -122,7 +122,7 @@ def render_playlist_json(playlist, screen_interspersed=None, screen_id=None):
         'playlist': list(map(lambda x: {"src": x.source.src(), "type": x.source.type, "duration": x.duration}, playlist.get_sources())),
         'interspersed': interspersed,
         "current_playlist": playlist.pk,
-        "playlist_last_updated": playlist.last_updated.isoformat(),
+        "playlist_last_updated": timezone.localtime(playlist.last_updated).isoformat(),
         "screen_id": screen_id
     }
 
@@ -148,10 +148,10 @@ def _get_meta(request, screen):
         return JsonResponse({"error": "no schedule assigned to this screen"}, status=404)
 
     playlist = screen.schedule.get_playlist()
-    screen.last_seen = datetime.now()
+    screen.last_seen = timezone.now()
     screen.save()
     out = {"current_playlist": playlist.pk,
-           "playlist_last_updated": playlist.last_updated.isoformat()}
+           "playlist_last_updated": timezone.localtime(playlist.last_updated).isoformat()}
     return JsonResponse(out)
 
 
