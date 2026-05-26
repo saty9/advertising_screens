@@ -26,12 +26,11 @@ class PlaylistParentsInline(TabularInline):
 
 @admin.register(Playlist)
 class PlaylistDisplay(ModelAdmin):
-    list_display = ('name', 'show_source_count', 'plays_everything', 'last_updated')
+    list_display = ('name', 'show_source_count', 'last_updated')
     search_fields = ('name', 'description')
-    list_filter = ('plays_everything',)
     readonly_fields = ('last_updated',)
     fieldsets = [
-        (None, {'fields': ['name', 'description', 'plays_everything', 'interspersed_source', 'last_updated']}),
+        (None, {'fields': ['name', 'description', 'interspersed_playlist', 'interspersed_rate', 'last_updated']}),
     ]
     inlines = [PlaylistParentsInline, PlaylistEntryInline]
 
@@ -139,6 +138,10 @@ class ScreenAdmin(ModelAdmin):
     search_fields = ('name', 'ip')
     list_filter = ('schedule',)
     list_select_related = ('schedule',)
+    fieldsets = [
+        (None, {'fields': ['name', 'schedule', 'interspersed_playlist', 'interspersed_rate',
+                           'ip', 'screen_preview']}),
+    ]
 
     @display(description="Online", boolean=True)
     def show_online(self, obj):

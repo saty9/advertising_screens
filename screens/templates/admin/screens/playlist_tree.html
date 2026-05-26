@@ -127,7 +127,6 @@
 <script>
 (function () {
   const COLOR_NORMAL = "#4f46e5";
-  const COLOR_EVERYTHING = "#d97706";
   const COLOR_TEXT = "#ffffff";
   const NODE_W = 160;
   const NODE_H = 40;
@@ -158,7 +157,6 @@
         name: info.name,
         description: info.description || "",
         source_count: info.source_count || 0,
-        plays_everything: info.plays_everything,
         depth: 0,
       };
       nodeMap[node.id] = node;
@@ -283,9 +281,7 @@
         })
         .on("mouseenter", (event, d) => {
           ttName.textContent = d.name;
-          ttSources.textContent = d.plays_everything
-            ? "Plays everything · " + d.source_count + " direct source(s)"
-            : d.source_count + " source(s)";
+          ttSources.textContent = d.source_count + " source(s)";
           ttDesc.textContent = d.description || "";
           tooltip.style.display = "block";
         })
@@ -303,7 +299,7 @@
       .attr("width", NODE_W)
       .attr("height", NODE_H)
       .attr("rx", 8)
-      .attr("fill", d => d.plays_everything ? COLOR_EVERYTHING : COLOR_NORMAL);
+      .attr("fill", COLOR_NORMAL);
 
     node.append("text")
       .attr("text-anchor", "middle")

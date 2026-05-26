@@ -5,12 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "django==4.2.29",
+    "django==5.2.14",
     "django-admin-ordering==0.20.0",
     "django-cleanup==9.0.0",
-    "django-unfold==0.82.0",
+    "django-unfold==0.94.0",
     "celery[redis]==5.3.6",
-    "django-celery-beat==2.5.0",
+    "django-celery-beat==2.9.0",
     "django-celery-results==2.6.0",
     "django-recurrence==1.14",
     "httplib2==0.31.2",

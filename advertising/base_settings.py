@@ -262,10 +262,12 @@ TIME_ZONE = 'Europe/London'
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
 DJANGO_CELERY_BEAT_TZ_AWARE = True
+
+# Preserve the legacy AutoField PK type; existing DBs were created before
+# Django 3.2's switch to BigAutoField.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
 # Static files (CSS, JavaScript, Images)

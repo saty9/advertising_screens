@@ -39,6 +39,27 @@ class PlaylistTests(TestCase):
         self.list_a.parents.add(self.list_b, self.list_c)
         self.assertListEqual(sources(self.list_a.get_sources()), [self.entry_a, self.entry_b, self.entry_c])
 
+    def test_interspersed_playlist_does_not_affect_get_sources(self):
+        self.list_a.interspersed_playlist = self.list_b
+        self.list_a.interspersed_rate = 3
+        self.list_a.save()
+        # interspersed settings are never part of get_sources()
+        self.assertListEqual(sources(self.list_a.get_sources()), [self.entry_a])
+        # the interspersed playlist resolves to its own flattened sources,
+        # ignoring its own interspersed settings
+        self.assertListEqual(sources(self.list_a.interspersed_playlist.get_sources()), [self.entry_b])
+
+    def test_inherited_interspersed_settings_ignored(self):
+        self.list_a.parents.add(self.list_b)
+        self.list_a.interspersed_playlist = self.list_c
+        self.list_a.interspersed_rate = 2
+        self.list_a.save()
+        self.list_b.interspersed_playlist = self.list_c
+        self.list_b.interspersed_rate = 5
+        self.list_b.save()
+        # only merged entries; parent's interspersed settings have no effect
+        self.assertListEqual(sources(self.list_a.get_sources()), [self.entry_a, self.entry_b])
+
     def test_circular_doesnt_spin(self):
         self.list_a.parents.add(self.list_b)
         self.list_b.parents.add(self.list_a)

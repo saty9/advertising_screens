@@ -5,19 +5,22 @@ from datetime import timedelta
 from django.db.models import Q
 from django.utils import timezone
 
-from screens.models import Source
 from screens.models.schedule import Schedule
 
 
 class Screen(models.Model):
     name = models.TextField()
     schedule = models.ForeignKey(Schedule, on_delete=models.PROTECT, null=True)
-    interspersed_source = models.ForeignKey(Source,
-                                            null=True,
-                                            default=None,
-                                            on_delete=models.SET_NULL,
-                                            blank=True,
-                                            help_text="Optional (you probably want an event schedule here)")
+    interspersed_playlist = models.ForeignKey("Playlist",
+                                              null=True,
+                                              default=None,
+                                              on_delete=models.SET_NULL,
+                                              blank=True,
+                                              related_name="+",
+                                              help_text="Optional playlist interspersed into the screen's playlist")
+    interspersed_rate = models.PositiveIntegerField(
+        default=1,
+        help_text="number of items to play before one item from the interspersed playlist")
     ip = models.GenericIPAddressField()
     last_seen = models.DateTimeField(auto_now_add=True, blank=True)
     

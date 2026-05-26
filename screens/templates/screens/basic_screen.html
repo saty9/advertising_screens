@@ -57,19 +57,6 @@
 <body>
 {% for source in playlist %}
     {% include "screens/display_source.html" with source=source %}
-    {% if interspersed %}
-        {% include "screens/display_source.html" with source=interspersed %}
-    {% endif %}
-    {% if screen_interspersed %}
-        {% include "screens/display_source.html" with source=screen_interspersed %}
-    {% endif %}
-{% empty %}
-    {% if interspersed %}
-        {% include "screens/display_source.html" with source=interspersed %}
-    {% endif %}
-    {% if screen_interspersed %}
-        {% include "screens/display_source.html" with source=screen_interspersed %}
-    {% endif %}
 {% endfor %}
 <script>
     {% if not debug %}
