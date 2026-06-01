@@ -57,6 +57,12 @@ class ScheduleRuleInline(StackedInline):
     extra = 0
     fields = ('playlist', 'starts', 'occurrences', 'start_time', 'end_time', 'priority')
 
+    class Media:
+        # django-recurrence's init script observes #container for new inline rows,
+        # but Unfold doesn't render that element. Re-init on Django's formset:added.
+        js = ('screens/js/recurrence_unfold_init.js',)
+        css = {'all': ('screens/css/recurrence_unfold.css',)}
+
 
 @admin.register(Schedule)
 class ScheduleDisplay(ModelAdmin):
