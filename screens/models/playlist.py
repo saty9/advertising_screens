@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
 
@@ -12,7 +14,7 @@ class Playlist(models.Model):
     name = models.TextField()
     description = models.TextField()
     interspersed_playlist = models.ForeignKey("self", null=True, default=None, on_delete=models.SET_NULL,
-                                              blank=True, related_name="+")
+                                              blank=True, related_name="interspersed_into")
     interspersed_rate = models.PositiveIntegerField(
         default=1,
         help_text="number of base playlist items to play before one item from the interspersed playlist")
@@ -49,3 +51,20 @@ class Playlist(models.Model):
 
     def get_absolute_url(self):
         return reverse('screens/playlist_view', args=[str(self.id)])
+
+
+@receiver(pre_delete, sender=Playlist)
+def interspersed_referrers_touched(sender, instance=None, **kwargs):
+    """
+    Republish anything that was interspersing the playlist being deleted.
+    """
+    from .screen import Screen
+
+    if instance is None:
+        return
+    for playlist in instance.interspersed_into.all():
+        playlist.meta_times_touch()
+    # Screen is imported lazily; screens.models.screen imports this module.
+    Screen.objects \
+        .filter(interspersed_playlist=instance) \
+        .update(last_updated=timezone.now())

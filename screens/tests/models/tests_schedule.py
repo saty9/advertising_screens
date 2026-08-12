@@ -242,41 +242,41 @@ class ScheduleTests(TestCase):
         self.assertEqual(self.schedule.get_playlist(), self.default_list)
 
 
-@time_machine.travel("2024-06-18 12:00:00", tick=False)  # Tuesday
-def test_byday_rule_fires_on_correct_day(self):
-    """A rule using BYDAY=TU should fire when today is Tuesday."""
-    self.schedule.schedulerule_set.create(
-        playlist=self.list_a,
-        priority=1,
-        starts=date(2024, 6, 1),
-        start_time=time(11, 0),
-        end_time=time(13, 0),
-        occurrences=recurrence.Recurrence(
-            dtstart=datetime(2024, 6, 1),
-            rrules=[recurrence.Rule(
-                recurrence.WEEKLY,
-                byday=[recurrence.Weekday(recurrence.TUESDAY)],
-            )],
-        ),
-    )
-    self.assertEqual(self.schedule.get_playlist(), self.list_a)
+    @time_machine.travel("2024-06-18 12:00:00", tick=False)  # Tuesday
+    def test_byday_rule_fires_on_correct_day(self):
+        """A rule using BYDAY=TU should fire when today is Tuesday."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(11, 0),
+            end_time=time(13, 0),
+            occurrences=recurrence.Recurrence(
+                dtstart=datetime(2024, 6, 1),
+                rrules=[recurrence.Rule(
+                    recurrence.WEEKLY,
+                    byday=[recurrence.TUESDAY],
+                )],
+            ),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.list_a)
 
-@time_machine.travel("2024-06-17 12:00:00", tick=False)  # Monday
-def test_byday_rule_does_not_fire_on_wrong_day(self):
-    """A rule using BYDAY=TU should not fire when today is Monday."""
-    self.schedule.schedulerule_set.create(
-        playlist=self.list_a,
-        priority=1,
-        starts=date(2024, 6, 1),
-        start_time=time(11, 0),
-        end_time=time(13, 0),
-        occurrences=recurrence.Recurrence(
-            dtstart=datetime(2024, 6, 1),
-            rrules=[recurrence.Rule(
-                recurrence.WEEKLY,
-                byday=[recurrence.Weekday(recurrence.TUESDAY)],
-            )],
-        ),
-    )
-    self.assertEqual(self.schedule.get_playlist(), self.default_list)
+    @time_machine.travel("2024-06-17 12:00:00", tick=False)  # Monday
+    def test_byday_rule_does_not_fire_on_wrong_day(self):
+        """A rule using BYDAY=TU should not fire when today is Monday."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(11, 0),
+            end_time=time(13, 0),
+            occurrences=recurrence.Recurrence(
+                dtstart=datetime(2024, 6, 1),
+                rrules=[recurrence.Rule(
+                    recurrence.WEEKLY,
+                    byday=[recurrence.TUESDAY],
+                )],
+            ),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.default_list)
 

@@ -115,8 +115,10 @@ def aggregate_last_updated(playlist, screen=None):
     candidates = [playlist.last_updated]
     if playlist.interspersed_playlist:
         candidates.append(playlist.interspersed_playlist.last_updated)
-    if screen and screen.interspersed_playlist:
-        candidates.append(screen.interspersed_playlist.last_updated)
+    if screen:
+        candidates.append(screen.last_updated)
+        if screen.interspersed_playlist:
+            candidates.append(screen.interspersed_playlist.last_updated)
     return max(candidates)
 
 
@@ -163,7 +165,7 @@ def _get_meta(request, screen):
 
     playlist = screen.schedule.get_playlist()
     screen.last_seen = timezone.now()
-    screen.save()
+    screen.save(update_fields=["last_seen"])
     out = {"current_playlist": playlist.pk,
            "playlist_last_updated": timezone.localtime(aggregate_last_updated(playlist, screen)).isoformat()}
     return JsonResponse(out)
