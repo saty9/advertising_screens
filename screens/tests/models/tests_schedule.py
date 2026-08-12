@@ -1,7 +1,8 @@
-from datetime import timedelta
+from datetime import timedelta, time, date, datetime
 from django.test import TestCase
 
 import recurrence
+import time_machine
 from django.utils import timezone
 
 from screens.models import Playlist, Schedule
@@ -104,4 +105,178 @@ class ScheduleTests(TestCase):
             occurrences=self.make_current_daily_reccurence()
         )
         self.assertEqual(self.schedule.get_playlist(), self.list_b)
+
+    # --- overnight / adjacent-day rule tests ---
+
+    def _make_daily_since(self, since: datetime):
+        rule = recurrence.Rule(recurrence.DAILY)
+        return recurrence.Recurrence(
+            dtstart=since,
+            rrules=[rule]
+        )
+
+    @time_machine.travel("2024-06-15 23:30:00", tick=False)
+    def test_overnight_rule_active_before_midnight(self):
+        """A rule whose window straddles midnight should match before midnight."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(23, 0),
+            end_time=time(1, 0),
+            occurrences=self._make_daily_since(datetime(2024, 6, 1)),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.list_a)
+
+    @time_machine.travel("2024-06-16 00:30:00", tick=False)
+    def test_overnight_rule_active_after_midnight(self):
+        """A rule whose window straddles midnight should still match after midnight."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(23, 0),
+            end_time=time(1, 0),
+            occurrences=self._make_daily_since(datetime(2024, 6, 1)),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.list_a)
+
+    @time_machine.travel("2024-06-15 12:00:00", tick=False)
+    def test_overnight_rule_inactive_midday(self):
+        """A rule whose window straddles midnight should not match in the middle of the day."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(23, 0),
+            end_time=time(1, 0),
+            occurrences=self._make_daily_since(datetime(2024, 6, 1)),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.default_list)
+
+    @time_machine.travel("2024-06-15 01:30:00", tick=False)
+    def test_overnight_rule_inactive_just_after_end(self):
+        """A rule ending at 01:00 should not match at 01:30."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(23, 0),
+            end_time=time(1, 0),
+            occurrences=self._make_daily_since(datetime(2024, 6, 1)),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.default_list)
+
+    @time_machine.travel("2024-06-17 12:00:00", tick=False)  # Monday
+    def test_weekly_rule_does_not_fire_the_day_before(self):
+        """A weekly rule whose next occurrence is tomorrow must not fire today.
+
+        Previously, because get_playlist passed dtstart=yesterday to between(),
+        the weekly recurrence was shifted to fire on yesterday's weekday, which
+        could cause the occurrence check to produce false results for rules whose
+        stored dtstart day-of-week differs from yesterday.  This test fixes the
+        case where the time window matches but the recurrence day does not.
+        """
+        # dtstart June 4 (Tuesday) → fires every Tuesday (Jun 11, 18, 25 …)
+        # We are on Monday Jun 17; next Tuesday is tomorrow Jun 18.
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(11, 0),
+            end_time=time(13, 0),
+            occurrences=recurrence.Recurrence(
+                dtstart=datetime(2024, 6, 4),  # Tuesday
+                rrules=[recurrence.Rule(recurrence.WEEKLY)],
+            ),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.default_list)
+
+    @time_machine.travel("2024-06-18 12:00:00", tick=False)  # Tuesday
+    def test_weekly_rule_fires_on_correct_day(self):
+        """A weekly Tuesday rule must fire when today is Tuesday."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(11, 0),
+            end_time=time(13, 0),
+            occurrences=recurrence.Recurrence(
+                dtstart=datetime(2024, 6, 4),  # Tuesday
+                rrules=[recurrence.Rule(recurrence.WEEKLY)],
+            ),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.list_a)
+
+    @time_machine.travel("2024-06-19 00:30:00", tick=False)  # Wednesday 00:30
+    def test_weekly_overnight_rule_active_after_midnight(self):
+        """A weekly overnight Tuesday rule (23:00–01:00) is still active on Wednesday 00:30."""
+        # dtstart June 4 (Tuesday) → fires Tuesdays 23:00 through Wednesday 01:00
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(23, 0),
+            end_time=time(1, 0),
+            occurrences=recurrence.Recurrence(
+                dtstart=datetime(2024, 6, 4),  # Tuesday
+                rrules=[recurrence.Rule(recurrence.WEEKLY)],
+            ),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.list_a)
+
+    @time_machine.travel("2024-06-20 00:30:00", tick=False)  # Thursday 00:30
+    def test_weekly_overnight_rule_inactive_wrong_day_after_midnight(self):
+        """A weekly overnight Tuesday rule must not fire on Thursday 00:30."""
+        self.schedule.schedulerule_set.create(
+            playlist=self.list_a,
+            priority=1,
+            starts=date(2024, 6, 1),
+            start_time=time(23, 0),
+            end_time=time(1, 0),
+            occurrences=recurrence.Recurrence(
+                dtstart=datetime(2024, 6, 4),  # Tuesday
+                rrules=[recurrence.Rule(recurrence.WEEKLY)],
+            ),
+        )
+        self.assertEqual(self.schedule.get_playlist(), self.default_list)
+
+
+@time_machine.travel("2024-06-18 12:00:00", tick=False)  # Tuesday
+def test_byday_rule_fires_on_correct_day(self):
+    """A rule using BYDAY=TU should fire when today is Tuesday."""
+    self.schedule.schedulerule_set.create(
+        playlist=self.list_a,
+        priority=1,
+        starts=date(2024, 6, 1),
+        start_time=time(11, 0),
+        end_time=time(13, 0),
+        occurrences=recurrence.Recurrence(
+            dtstart=datetime(2024, 6, 1),
+            rrules=[recurrence.Rule(
+                recurrence.WEEKLY,
+                byday=[recurrence.Weekday(recurrence.TUESDAY)],
+            )],
+        ),
+    )
+    self.assertEqual(self.schedule.get_playlist(), self.list_a)
+
+@time_machine.travel("2024-06-17 12:00:00", tick=False)  # Monday
+def test_byday_rule_does_not_fire_on_wrong_day(self):
+    """A rule using BYDAY=TU should not fire when today is Monday."""
+    self.schedule.schedulerule_set.create(
+        playlist=self.list_a,
+        priority=1,
+        starts=date(2024, 6, 1),
+        start_time=time(11, 0),
+        end_time=time(13, 0),
+        occurrences=recurrence.Recurrence(
+            dtstart=datetime(2024, 6, 1),
+            rrules=[recurrence.Rule(
+                recurrence.WEEKLY,
+                byday=[recurrence.Weekday(recurrence.TUESDAY)],
+            )],
+        ),
+    )
+    self.assertEqual(self.schedule.get_playlist(), self.default_list)
 
