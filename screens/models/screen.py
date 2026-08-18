@@ -23,6 +23,7 @@ class Screen(models.Model):
         help_text="number of items to play before one item from the interspersed playlist")
     ip = models.GenericIPAddressField()
     last_seen = models.DateTimeField(auto_now_add=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True) # Manually tracked to avoid last_seen constantly bumping this
     
     def online(self):
         return self.last_seen and self.last_seen >= timezone.now()-timedelta(minutes=1)

@@ -4,7 +4,7 @@ from django.test import TestCase
 import time_machine
 from django.db.models import ProtectedError
 
-from screens.models import Playlist, PlaylistEntry, Source, PlaylistRelation
+from screens.models import Playlist, PlaylistEntry, Source, PlaylistRelation, Screen, Schedule
 
 UTC = datetime.timezone.utc
 
@@ -89,6 +89,14 @@ class PlaylistTests(TestCase):
         self.list_b.refresh_from_db()
         self.assertEqual(self.list_b.last_updated.astimezone(UTC), update_time.astimezone(UTC))
 
+    def test_removing_a_parent_updates_last_updated(self):
+        relation = PlaylistRelation.objects.create(inheriting_list=self.list_b, super_list=self.list_a)
+        update_time = datetime.datetime.fromisoformat("2022-03-28T21:59:34+00:00")
+        time_machine.travel(update_time, tick=False).start()
+        relation.delete()
+        self.list_b.refresh_from_db()
+        self.assertEqual(self.list_b.last_updated.astimezone(UTC), update_time.astimezone(UTC))
+
     def test_adding_a_source_updates_childrens_last_updated(self):
         PlaylistRelation.objects.create(inheriting_list=self.list_b, super_list=self.list_a)
         update_time = datetime.datetime.fromisoformat("2022-03-28T21:59:34+00:00")
@@ -96,6 +104,30 @@ class PlaylistTests(TestCase):
         PlaylistEntry.objects.create(playlist=self.list_a, number=2, source=Source.objects.create())
         self.list_b.refresh_from_db()
         self.assertEqual(self.list_b.last_updated.astimezone(UTC), update_time.astimezone(UTC))
+
+    def test_deleting_interspersed_playlist_touches_referrers(self):
+        schedule = Schedule.objects.create(name="sched", description="", default_playlist=self.list_a)
+        screen = Screen.objects.create(
+            name="screen",
+            schedule=schedule,
+            ip="1.2.3.4",
+            interspersed_playlist=self.list_b,
+            interspersed_rate=2,
+        )
+        self.list_a.interspersed_playlist = self.list_b
+        self.list_a.interspersed_rate = 3
+        self.list_a.save()
+
+        update_time = datetime.datetime.fromisoformat("2022-03-28T21:59:34+00:00")
+        time_machine.travel(update_time, tick=False).start()
+        self.list_b.delete()
+
+        self.list_a.refresh_from_db()
+        screen.refresh_from_db()
+        self.assertIsNone(self.list_a.interspersed_playlist)
+        self.assertIsNone(screen.interspersed_playlist)
+        self.assertEqual(self.list_a.last_updated.astimezone(UTC), update_time.astimezone(UTC))
+        self.assertEqual(screen.last_updated.astimezone(UTC), update_time.astimezone(UTC))
 
     def test_circular_parents_meta_times_update(self):
         self.list_a.parents.add(self.list_b)

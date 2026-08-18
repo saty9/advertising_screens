@@ -1,10 +1,11 @@
 import datetime
 from django.test import TestCase
+from django.test.client import RequestFactory
 
 import time_machine
 
 from screens.models import Playlist, PlaylistEntry, Source, Screen, Schedule
-from screens.views import render_playlist_json
+from screens.views import _get_meta, render_playlist_json
 
 
 def web_source(url):
@@ -68,13 +69,47 @@ class RenderPlaylistJsonTests(TestCase):
         screen = Screen.objects.create(name="scr", schedule=schedule, ip="1.2.3.4",
                                        interspersed_playlist=self.scr_intersp)
         update_time = datetime.datetime.fromisoformat("2022-04-01T00:00:00+00:00")
-        time_machine.travel(update_time, tick=False).start()
-        self.scr_intersp.meta_times_touch()
-        self.scr_intersp.refresh_from_db()
+        Screen.objects.filter(pk=screen.pk).update(last_updated=update_time)
+        screen.refresh_from_db()
         out = render_playlist_json(self.base, screen=screen, screen_id=screen.id)
-        # aggregate picks the newest of base / playlist-interspersed /
-        # screen-interspersed last_updated (here the just-touched screen one),
-        # rendered in local time exactly as the view does.
+        # aggregate picks the newest of base / playlist-interspersed / screen
+        # last_updated and renders local-time isoformat.
         self.assertEqual(
             datetime.datetime.fromisoformat(out["playlist_last_updated"]),
-            self.scr_intersp.last_updated)
+            screen.last_updated)
+
+        time_machine.travel(update_time + datetime.timedelta(minutes=1), tick=False).start()
+        screen.interspersed_playlist.meta_times_touch()
+        out = render_playlist_json(self.base, screen=screen, screen_id=screen.id)
+        self.assertEqual(
+            datetime.datetime.fromisoformat(out["playlist_last_updated"]),
+            screen.interspersed_playlist.last_updated)
+
+        time_machine.travel(update_time + datetime.timedelta(minutes=2), tick=False).start()
+        self.base.meta_times_touch()
+        out = render_playlist_json(self.base, screen=screen, screen_id=screen.id)
+        self.assertEqual(
+            datetime.datetime.fromisoformat(out["playlist_last_updated"]),
+            self.base.last_updated)
+
+        time_machine.travel(update_time + datetime.timedelta(minutes=3), tick=False).start()
+        self.pl_intersp.meta_times_touch()
+        out = render_playlist_json(self.base, screen=screen, screen_id=screen.id)
+        self.assertEqual(
+            datetime.datetime.fromisoformat(out["playlist_last_updated"]),
+            self.pl_intersp.last_updated)
+
+
+    def test_get_meta_updates_last_seen_without_bumping_last_updated(self):
+        schedule = Schedule.objects.create(name="s", description="", default_playlist=self.base)
+        screen = Screen.objects.create(name="scr", schedule=schedule, ip="1.2.3.4")
+        original_last_updated = screen.last_updated
+
+        update_time = datetime.datetime.fromisoformat("2022-04-01T00:00:00+00:00")
+        time_machine.travel(update_time, tick=False).start()
+        response = _get_meta(RequestFactory().get("/meta"), screen)
+
+        screen.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(screen.last_seen, update_time)
+        self.assertEqual(screen.last_updated, original_last_updated)
