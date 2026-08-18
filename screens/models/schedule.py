@@ -19,13 +19,10 @@ class Schedule(models.Model):
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         yesterday_start = today_start - timedelta(days=1)
         playlist = self.default_playlist
-        priority = 999999
         # Fetch rules that have already started; time-window filtering is done
         # in Python so that overnight rules (start_time > end_time) are handled
         # correctly — the DB filter cannot express a window that wraps midnight.
-        for rule in self.schedulerule_set.filter(starts__lte=now).all():
-            if rule.priority > priority:
-                continue
+        for rule in self.schedulerule_set.filter(starts__lte=now).order_by('priority', 'pk').all():
             overnight = rule.start_time > rule.end_time
             if overnight:
                 in_window = now.time() >= rule.start_time or now.time() <= rule.end_time
@@ -54,8 +51,7 @@ class Schedule(models.Model):
             else:
                 normalized_dtstart = stored_dtstart or ref_start
             if any(rule.occurrences.between(ref_start, ref_end, dtstart=normalized_dtstart)):
-                playlist = rule.playlist
-                priority = rule.priority
+                return rule.playlist
 
         return playlist
 
